@@ -1,102 +1,99 @@
 .freelancer-project-card {
-    border: 1px solid #ddd; /* Light gray border */
-    border-radius: 8px; /* Rounded corners */
-    padding: 16px; /* Spacing inside the card */
-    background-color: #fff; /* White background for the card */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-    transition: transform 0.2s; /* Smooth scaling effect */
-  }
-  
-  .freelancer-project-card:hover {
-    transform: scale(1.02); /* Slightly scale up on hover */
-  }
-  
-  .freelancer-project-card h3 {
-    margin-bottom: 8px; /* Space below the title */
-    color: #333; /* Darker color for the title */
-  }
-  
-  .freelancer-project-card p {
-    margin: 4px 0; /* Space between paragraphs */
-    color: #555; /* Medium gray color for text */
-  }
-  
-  /* Centering the buttons in a flex container */
-  .freelancer-project-card .button-container {
-    display: flex; /* Use flexbox for the button container */
-    justify-content: center; /* Center horizontally */
-    margin-top: 12px; /* Space above the button container */
-  }
-  
-  .freelancer-project-card button {
-    background-color: #007bff; /* Blue background */
-    color: #fff; /* White text */
-    border: none; /* No border */
-    border-radius: 4px; /* Rounded corners */
-    padding: 8px 16px; /* Padding inside the button */
-    cursor: pointer; /* Pointer cursor on hover */
-    margin: 0 8px; /* Space between buttons */
-    transition: background-color 0.3s; /* Smooth background color change */
-  }
-  
-  .freelancer-project-card button:hover {
-    background-color: #0056b3; /* Darker blue on hover */
-  }
-  
-  .freelancer-project-card button:disabled {
-    background-color: #007bff; /* Keep the same blue color for disabled buttons */
-    opacity: 0.6; /* Make disabled buttons semi-transparent */
-    cursor: not-allowed; /* Change cursor for disabled buttons */
-  }
+  padding: 1.5rem;
+  border-radius: 1.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
 
-  /* Modal Overlay */
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
+.freelancer-project-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(139, 92, 246, 0.45);
+}
 
-  /* Modal Content */
-  .modal-content {
-    background-color: white;
-    border-radius: 12px;
-    padding: 32px;
-    max-width: 600px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    position: relative;
-  }
+.freelancer-project-card h3 {
+  margin-bottom: 0.8rem;
+  color: var(--text-primary);
+}
 
-  /* Modal Close Button */
-  .modal-close {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: none;
-    border: none;
-    font-size: 28px;
-    color: #666;
-    cursor: pointer;
-    padding: 0;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s;
-  }
+.freelancer-project-card p {
+  margin: 0.55rem 0;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
 
-  .modal-close:hover {
-    background-color: #f0f0f0;
-    color: #333;
-  }
+.freelancer-project-card .button-container {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.freelancer-project-card button {
+  min-width: 130px;
+  padding: 0.95rem 1.25rem;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent), #4f46e5);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.freelancer-project-card button:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #7c3aed, #4338ca);
+}
+
+.freelancer-project-card button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(1, 8, 26, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: rgba(9, 17, 33, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.modal-close:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--text-primary);
+}

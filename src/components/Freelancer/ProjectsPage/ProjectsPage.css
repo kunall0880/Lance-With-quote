@@ -1,104 +1,83 @@
 .freelancer-projects-page {
-  padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
+  padding: 2rem 1.5rem 3rem;
+  display: grid;
+  gap: 1.5rem;
 }
 
 .projects-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  gap: 1rem;
+  padding: 1.5rem 1.75rem;
+  border-radius: 1.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.18);
 }
 
 .projects-header h2 {
   margin: 0;
-  color: #333;
-  font-size: 24px;
+  color: var(--text-primary);
+  font-size: clamp(1.9rem, 2.4vw, 2.2rem);
 }
 
 .refresh-btn {
-  background-color: #667eea;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  appearance: none;
+  border-radius: 999px;
+  padding: 0.95rem 1.25rem;
+  background: linear-gradient(135deg, var(--accent), #4f46e5);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 16px 30px rgba(99, 102, 241, 0.18);
 }
 
 .refresh-btn:hover:not(:disabled) {
-  background-color: #5568d3;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #7c3aed, #4338ca);
 }
 
 .refresh-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.65;
   cursor: not-allowed;
 }
 
-.selected-account {
-  background: white;
-  padding: 10px 20px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-  color: #333;
-  font-size: 14px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
+.selected-account,
 .loading,
 .error {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  font-size: 16px;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
 }
 
 .loading {
-  color: #667eea;
+  color: var(--text-primary);
 }
 
 .error {
-  color: #dc3545;
-  border-left: 4px solid #dc3545;
+  border-left: 4px solid rgba(251, 113, 133, 0.9);
 }
 
 .freelancer-projects-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.25rem;
 }
 
 @media (max-width: 768px) {
   .projects-header {
     flex-direction: column;
-    gap: 15px;
-    align-items: flex-start;
-  }
-
-  .refresh-btn {
-    align-self: flex-end;
+    align-items: stretch;
   }
 
   .freelancer-projects-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   }
 }
 
 @media (max-width: 480px) {
-  .projects-header h2 {
-    font-size: 20px;
-  }
-
   .freelancer-projects-grid {
     grid-template-columns: 1fr;
   }

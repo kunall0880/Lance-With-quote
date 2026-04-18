@@ -161,12 +161,75 @@ function Freelancer() {
 
   return (
     <div className="freelancer-container">
-      <h2 className="freelancer-title">Freelancer Dashboard</h2>
-      {selectedAccount && <p className="freelancer-info">Connected Account: {selectedAccount}</p>}
-      {balance && <p className="freelancer-info">Account Balance: {balance} ETH</p>}
-      {rating !== null && <p className="freelancer-info">Freelancer Rating: {rating}</p>} {/* Display the rating */}
-      <button className="freelancer-button" onClick={handleViewProjects}>View Projects</button>
-      <button className="freelancer-button" onClick={handleYourProjects}>Your Projects</button> {/* New button */}
+      <section className="freelancer-panel">
+        <div className="page-title">
+          <div>
+            <h2 className="freelancer-title">Freelancer Dashboard</h2>
+            <p className="subtle-text">Browse available jobs, monitor your wallet, and track your reputation in one sleek panel.</p>
+          </div>
+        </div>
+
+        <div className="freelancer-stats">
+          <div className="freelancer-card">
+            <h3>Wallet</h3>
+            <p>{selectedAccount || 'No wallet connected'}</p>
+          </div>
+          <div className="freelancer-card">
+            <h3>Balance</h3>
+            <p>{balance ? `${balance} ETH` : 'Loading...'}</p>
+          </div>
+          <div className="freelancer-card">
+            <h3>Rating</h3>
+            <p>{rating !== null ? rating : 'Not rated yet'}</p>
+          </div>
+        </div>
+
+        <div className="dashboard-ticker">
+          <span>Live updates</span>
+          <p>2 new gigs available • 1 project awarded • 0 unpaid milestones</p>
+        </div>
+
+        <div className="dashboard-insight-grid">
+          <div className="insight-card">
+            <h4>Open bids</h4>
+            <p>Browse current client opportunities and send your best proposal.</p>
+          </div>
+          <div className="insight-card">
+            <h4>Milestone-ready</h4>
+            <p>Work on projects with milestone payment transparency.</p>
+          </div>
+          <div className="insight-card">
+            <h4>Reputation boost</h4>
+            <p>Complete jobs and improve your Web3 freelancer score.</p>
+          </div>
+        </div>
+
+        <div className="activity-panel">
+          <div className="activity-header">
+            <h3>Recent activity</h3>
+            <span className="badge">New</span>
+          </div>
+          <div className="activity-items">
+            <div className="activity-item">
+              <p className="activity-title">New job available</p>
+              <p className="activity-detail">A client has posted a project in your preferred category.</p>
+            </div>
+            <div className="activity-item">
+              <p className="activity-title">Awaiting reply</p>
+              <p className="activity-detail">One of your proposals is pending client approval.</p>
+            </div>
+            <div className="activity-item">
+              <p className="activity-title">Reputation score</p>
+              <p className="activity-detail">Complete the first project to unlock a better rating.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="freelancer-actions">
+          <button className="freelancer-button" onClick={handleViewProjects}>View Projects</button>
+          <button className="freelancer-button" onClick={handleYourProjects}>Your Projects</button>
+        </div>
+      </section>
     </div>
   );
 }

@@ -160,19 +160,83 @@ function Client() {
 
   return (
     <div className="clients-projects-page">
-      <h2>Client Dashboard</h2>
-      {selectedAccount && <p>Connected Account: {selectedAccount}</p>}
-      {balance && <p>Account Balance: {balance} ETH</p>}
+      <section className="dashboard-panel">
+        <div className="page-title">
+          <div>
+            <h2>Client Dashboard</h2>
+            <p className="subtle-text">Create new jobs, review quotes, and manage project flow with a clean Web3 dashboard.</p>
+          </div>
+        </div>
 
-      <button onClick={() => setIsModalOpen(true)}>Add Project</button>
-      <button onClick={handleViewProjects}>View Projects</button>
-      <button onClick={handleViewQuotations}>📊 View Quotations</button>
+        <div className="dashboard-ticker">
+          <span>Live updates</span>
+          <p>New quote received • 1 milestone ready • 0 unresolved requests</p>
+        </div>
 
-      {statusMessage && <p className="status-message">{statusMessage}</p>}
+        <div className="dashboard-summary">
+          <div className="metric-card">
+            <h3>Connected wallet</h3>
+            <p>{selectedAccount || 'No wallet connected'}</p>
+          </div>
+          <div className="metric-card">
+            <h3>Balance</h3>
+            <p>{balance ? `${balance} ETH` : 'Loading...'}</p>
+          </div>
+          <div className="metric-card">
+            <h3>Action center</h3>
+            <p>Launch projects and review quotes instantly</p>
+          </div>
+        </div>
+
+        <div className="dashboard-insight-grid">
+          <div className="insight-card">
+            <h4>Active Projects</h4>
+            <p>0 ongoing jobs yet — add a project to get bids.</p>
+          </div>
+          <div className="insight-card">
+            <h4>Pending Quotes</h4>
+            <p>Track incoming proposals and accept the best fit.</p>
+          </div>
+          <div className="insight-card">
+            <h4>Milestone Trust</h4>
+            <p>Use escrow-style workflows for safer freelancer payments.</p>
+          </div>
+        </div>
+
+        <div className="activity-panel">
+          <div className="activity-header">
+            <h3>Recent activity</h3>
+            <span className="badge">Live</span>
+          </div>
+          <div className="activity-items">
+            <div className="activity-item">
+              <p className="activity-title">New project draft ready</p>
+              <p className="activity-detail">Add details and publish to start receiving bids.</p>
+            </div>
+            <div className="activity-item">
+              <p className="activity-title">Quote from freelancer</p>
+              <p className="activity-detail">A proposal is waiting for your review in the quotations page.</p>
+            </div>
+            <div className="activity-item">
+              <p className="activity-title">Milestone workflow</p>
+              <p className="activity-detail">Hold project funds in a secure smart contract until delivery.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="client-actions">
+          <button className="button-primary" onClick={() => setIsModalOpen(true)}>Add Project</button>
+          <button className="button-secondary" onClick={handleViewProjects}>View Projects</button>
+          <button className="button-secondary" onClick={handleViewQuotations}>View Quotations</button>
+        </div>
+
+        {statusMessage && <p className="status-message">{statusMessage}</p>}
+      </section>
 
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
+            <button className="close-button" type="button" onClick={() => setIsModalOpen(false)}>✕</button>
             <h3>Add a New Project</h3>
             <form onSubmit={handleAddProject}>
               <div>
@@ -201,8 +265,10 @@ function Client() {
                   required
                 />
               </div>
-              <button type="submit">Done</button>
-              <button type="button" onClick={() => setIsModalOpen(false)}>Close</button>
+              <div className="client-actions">
+                <button type="submit" className="button-primary">Submit</button>
+                <button type="button" className="button-secondary" onClick={() => setIsModalOpen(false)}>Close</button>
+              </div>
             </form>
           </div>
         </div>

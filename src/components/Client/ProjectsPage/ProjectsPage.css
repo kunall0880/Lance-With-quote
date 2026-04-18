@@ -1,91 +1,76 @@
 .client-projects-page {
-  padding: 30px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
+  padding: 2rem 1.5rem 3rem;
+  display: grid;
+  gap: 1.5rem;
 }
 
 .projects-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  gap: 1rem;
+  padding: 1.5rem 1.75rem;
+  border-radius: 1.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.18);
 }
 
 .projects-header h2 {
   margin: 0;
-  color: #333;
-  font-size: 28px;
+  color: var(--text-primary);
+  font-size: clamp(1.9rem, 2.5vw, 2.4rem);
 }
 
 .refresh-btn {
-  background-color: #667eea;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  appearance: none;
+  border-radius: 999px;
+  padding: 0.95rem 1.25rem;
+  background: linear-gradient(135deg, var(--accent), #4f46e5);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 16px 30px rgba(99, 102, 241, 0.18);
 }
 
 .refresh-btn:hover:not(:disabled) {
-  background-color: #5568d3;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #7c3aed, #4338ca);
 }
 
 .refresh-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.65;
   cursor: not-allowed;
 }
 
 .error-message {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c2c7;
-  border-left: 4px solid #dc3545;
-  padding: 12px 15px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-  font-weight: 500;
+  background: rgba(251, 113, 133, 0.14);
+  color: #fee2e2;
+  border-left: 4px solid rgba(251, 113, 133, 0.8);
+  padding: 1rem 1.2rem;
+  border-radius: 1rem;
+  margin-bottom: 0;
 }
 
-.loading {
-  text-align: center;
-  color: white;
-  font-size: 16px;
-  padding: 40px;
-}
-
+.loading,
 .no-projects {
+  padding: 2rem;
+  border-radius: 1.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
   text-align: center;
-  background: white;
-  padding: 60px 40px;
-  border-radius: 10px;
-  color: #666;
-  font-size: 16px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.25rem;
 }
 
 @media (max-width: 768px) {
   .projects-header {
     flex-direction: column;
-    gap: 15px;
-    align-items: flex-start;
-  }
-
-  .refresh-btn {
-    align-self: flex-end;
+    align-items: stretch;
   }
 
   .projects-grid {

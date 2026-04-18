@@ -1,72 +1,73 @@
 .quotation-card {
-  background: white;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  padding: 20px;
-  transition: all 0.3s ease;
+  padding: 1.5rem;
+  border-radius: 1.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .quotation-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border-color: #667eea;
+  transform: translateY(-3px);
+  border-color: rgba(139, 92, 246, 0.45);
 }
 
 .quotation-card.status-proposed {
-  border-left: 5px solid #ffc107;
+  border-left: 5px solid #fbbf24;
 }
 
 .quotation-card.status-negotiating {
-  border-left: 5px solid #17a2b8;
+  border-left: 5px solid #38bdf8;
 }
 
 .quotation-card.status-accepted {
-  border-left: 5px solid #28a745;
-  background: #f0f8f0;
+  border-left: 5px solid #22c55e;
+  background: rgba(34, 197, 94, 0.1);
 }
 
 .quotation-card.status-rejected {
-  border-left: 5px solid #dc3545;
-  background: #f8f0f0;
-  opacity: 0.8;
+  border-left: 5px solid #fb7185;
+  background: rgba(251, 113, 133, 0.12);
 }
 
 .quotation-card.status-pending {
-  border-left: 5px solid #999;
+  border-left: 5px solid #94a3b8;
 }
 
 .quotation-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 15px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .quotation-from {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
   flex: 1;
 }
 
 .badge {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
-  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .freelancer-badge {
-  background-color: #e7f3ff;
-  color: #0066cc;
+  background: rgba(59, 130, 246, 0.12);
+  color: #bfdbfe;
 }
 
 .freelancer-address {
-  font-size: 12px;
-  color: #666;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
   word-break: break-all;
   font-family: 'Courier New', monospace;
 }
@@ -76,192 +77,192 @@
 }
 
 .status-badge {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.95rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
   text-transform: capitalize;
 }
 
 .status-badge.status-proposed {
-  background-color: #fff3cd;
-  color: #856404;
+  background: rgba(251, 191, 24, 0.14);
+  color: #fbbf24;
 }
 
 .status-badge.status-negotiating {
-  background-color: #cfe2ff;
-  color: #084298;
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
 }
 
 .status-badge.status-accepted {
-  background-color: #d1e7dd;
-  color: #0f5132;
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
 }
 
 .status-badge.status-rejected {
-  background-color: #f8d7da;
-  color: #842029;
+  background: rgba(251, 113, 133, 0.14);
+  color: #fb7185;
 }
 
 .status-badge.status-pending {
-  background-color: #e2e3e5;
-  color: #383d41;
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
 }
 
 .quotation-amount {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 15px;
-  padding: 12px;
-  background: #f9f9f9;
-  border-radius: 6px;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 1rem;
 }
 
 .quotation-amount .label {
-  font-size: 12px;
-  color: #666;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .quotation-amount .amount {
-  font-size: 18px;
-  font-weight: bold;
-  color: #667eea;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .quotation-amount .difference {
-  font-size: 11px;
-  color: #999;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
   font-style: italic;
 }
 
-.quotation-description {
-  margin-bottom: 15px;
+.quotation-description,
+.quotation-notes {
+  margin-bottom: 1.25rem;
 }
 
 .quotation-description .label,
 .quotation-notes .label {
   display: block;
-  font-size: 12px;
-  color: #666;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
   text-transform: uppercase;
-  font-weight: 600;
-  margin-bottom: 6px;
+  font-weight: 700;
 }
 
 .quotation-description p,
 .quotation-notes p {
   margin: 0;
-  color: #333;
-  font-size: 14px;
-  line-height: 1.5;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.75;
 }
 
 .quotation-notes {
-  margin-bottom: 15px;
-  padding: 12px;
-  background: #f0f8ff;
-  border-left: 3px solid #0066cc;
-  border-radius: 4px;
+  padding: 1rem;
+  background: rgba(59, 130, 246, 0.07);
+  border-left: 3px solid rgba(59, 130, 246, 0.45);
+  border-radius: 1rem;
 }
 
 .quotation-timestamp {
-  margin-bottom: 15px;
+  margin-bottom: 1.25rem;
   text-align: right;
 }
 
 .quotation-timestamp small {
-  color: #999;
-  font-size: 11px;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
 }
 
 .quotation-actions {
   display: flex;
-  gap: 10px;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
 .btn {
   flex: 1;
-  min-width: 100px;
-  padding: 10px 15px;
+  min-width: 110px;
+  padding: 0.95rem 1rem;
   border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s;
-  text-transform: capitalize;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.65;
   cursor: not-allowed;
 }
 
 .btn-accept {
-  background-color: #28a745;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   color: white;
 }
 
 .btn-accept:hover:not(:disabled) {
-  background-color: #218838;
-  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+  box-shadow: 0 14px 30px rgba(34, 197, 94, 0.22);
 }
 
 .btn-reject {
-  background-color: #dc3545;
+  background: linear-gradient(135deg, #fb7185, #dc2626);
   color: white;
 }
 
 .btn-reject:hover:not(:disabled) {
-  background-color: #c82333;
-  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+  box-shadow: 0 14px 30px rgba(251, 113, 133, 0.22);
 }
 
 .quotation-accepted-message,
 .quotation-rejected-message {
-  padding: 12px;
-  border-radius: 6px;
+  padding: 1rem;
+  border-radius: 1rem;
   text-align: center;
-  font-weight: 600;
-  font-size: 14px;
-  margin-top: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-top: 1rem;
 }
 
 .quotation-accepted-message {
-  background-color: #d1e7dd;
-  color: #0f5132;
-  border: 1px solid #badbcc;
+  background: rgba(34, 197, 94, 0.12);
+  color: #d1fae5;
+  border: 1px solid rgba(34, 197, 94, 0.25);
 }
 
 .quotation-rejected-message {
-  background-color: #f8d7da;
-  color: #842029;
-  border: 1px solid #f5c2c7;
+  background: rgba(251, 113, 133, 0.12);
+  color: #fed7d7;
+  border: 1px solid rgba(251, 113, 133, 0.25);
 }
 
 .error-message {
-  background-color: #f8d7da;
-  color: #842029;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 10px;
-  font-size: 12px;
-  border-left: 3px solid #842029;
+  background: rgba(251, 113, 133, 0.12);
+  color: #fee2e2;
+  padding: 0.85rem 1rem;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  border-left: 3px solid rgba(251, 113, 133, 0.8);
 }
 
 .success-message {
-  background-color: #d1e7dd;
-  color: #0f5132;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 10px;
-  font-size: 12px;
-  border-left: 3px solid #0f5132;
+  background: rgba(34, 197, 94, 0.12);
+  color: #d1fae5;
+  padding: 0.85rem 1rem;
+  border-radius: 1rem;
 }
 
 @media (max-width: 480px) {

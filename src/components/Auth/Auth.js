@@ -114,9 +114,32 @@ function Auth() {
 
   return (
     <div className="auth-container">
+      <div className="auth-intro">
+        <div className="hero-copy">
+          <span className="eyebrow">Welcome to DeLance</span>
+          <h1>Launch your next Web3 freelancing project with trust and speed.</h1>
+          <p className="hero-description">Connect your wallet, choose a role, and move from hiring to delivery on a blockchain-native marketplace.</p>
+        </div>
+        <div className="hero-stat-grid">
+          <div className="hero-stat">
+            <span>0+</span>
+            <p>Jobs live</p>
+          </div>
+          <div className="hero-stat">
+            <span>0+</span>
+            <p>Freelancer bids</p>
+          </div>
+          <div className="hero-stat">
+            <span>0</span>
+            <p>Smart contracts</p>
+          </div>
+        </div>
+      </div>
+
       <div className="auth-card">
         <h2>Login with MetaMask</h2>
-        
+        <p>Connect your wallet, select your role, and enter the DeLance dashboard.</p>
+
         {errorMessage && (
           <div className="auth-error">
             {errorMessage}
@@ -152,6 +175,23 @@ function Auth() {
         </div>
 
         <button className="auth-button" onClick={handleLogin}>Login</button>
+      </div>
+      <div className="auth-extras">
+        <h3>Why DeLance?</h3>
+        <div className="feature-grid">
+          <div className="feature-card">
+            <strong>Secure wallet login</strong>
+            <p>Authenticate with MetaMask and keep your projects on-chain.</p>
+          </div>
+          <div className="feature-card">
+            <strong>Smart job matching</strong>
+            <p>Post projects and receive freelancer quotes in a Web3-native flow.</p>
+          </div>
+          <div className="feature-card">
+            <strong>Transparent bidding</strong>
+            <p>Track proposals, payments, and milestones with blockchain accountability.</p>
+          </div>
+        </div>
       </div>
     </div>
   );

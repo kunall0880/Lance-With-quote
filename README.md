@@ -12,6 +12,19 @@ The existing platforms don't have an **automated rating system**. Our platform a
 There also does not exist a comprehensive solution which automates the entire workflow and integrates it with **decentralized arbitration** as we have done. 
 The files are also uploaded on **IPFS** making them available as an **immutable proof** for the arbitrators. We have also **automated the payment of funds** after acceptance of proof of work for each milestone via **escrow contracts**.
 
+## Implementation details
+
+This repository contains a complete local DApp workflow:
+
+- **React frontend** with a login page, role selection, client dashboard, and freelancer dashboard.
+- **MetaMask wallet integration** for account selection and role-based navigation.
+- **Project posting and milestone management** for clients, including reward split and approval flow.
+- **Freelancer quotation requests and milestone submissions** with proof upload support.
+- **Escrow-style contract interactions** managed by Ethereum smart contracts and local Ganache deployment.
+- **File upload backend** in `server/index.js` using Express, Multer, and AWS SDK for 4everland/IPFS-compatible storage.
+- **Contract artifacts** in `src/contracts/` used by the frontend to connect to deployed smart contracts.
+- **Truffle deployment** inside `truffle_project/` for local and optional Sepolia networks.
+
 ## Workflow:
 
 - Our website begins with asking the user to login/sign up as a client or freelancer.
