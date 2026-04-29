@@ -123,7 +123,7 @@ module.exports = {
       settings: {          // See the solidity docs for advice about optimization and evmVersion
        optimizer: {
          enabled: true,
-         runs: 1   // Lower runs value optimizes for smaller contract size
+         runs: 1   // Optimizes for smaller contract size (best for local/testnet)
        },
        viaIR: true,
        evmVersion: "paris"

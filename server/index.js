@@ -14,10 +14,6 @@ const SECRET_ACCESS_KEY = process.env.FOUREVERLAND_SECRET_ACCESS_KEY || process.
 const BUCKET = process.env.FOUREVERLAND_BUCKET || process.env.FOUR_EVERLAND_BUCKET;
 const REGION = process.env.FOUREVERLAND_REGION || 'us-east-1';
 
-// You can set either:
-// - FOUREVERLAND_ENDPOINT="https://psa-temp.endpoint.4everland.co"
-// or:
-// - FOUREVERLAND_ENDPOINT_BASE="https://endpoint.4everland.co" (we'll prefix bucket)
 const ENDPOINT =
   process.env.FOUREVERLAND_ENDPOINT ||
   (process.env.FOUREVERLAND_ENDPOINT_BASE

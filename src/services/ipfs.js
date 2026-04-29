@@ -7,7 +7,7 @@ const PINATA_PIN_FILE_URL = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
 
 /**
  * Fetches all files from IPFS (using smart contract storage)
- * No need for QuickNode for this - we get files from blockchain
+ * No need for Server for this - we get files from blockchain
  */
 export async function fetchFilesfromIPFS(pageNumber = 1, perPage = 10) {
   // Files are stored on blockchain, so we get them from smart contract

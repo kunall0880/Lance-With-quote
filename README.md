@@ -79,6 +79,49 @@ To run this project, ensure you have the following installed:
 - **QuickNode Account**: Ethereum and IPFS provider, available at [QuickNode](https://www.quicknode.com/).
 - **Ganache Account**: App for test accounts and network.
 
+## Quick Start Guide (5 Minutes)
+
+If you want to **get the app running immediately**, follow these steps:
+
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Start Ganache** (Terminal 1):
+   ```bash
+   npm run ganache
+   ```
+   This runs a local blockchain at `http://127.0.0.1:7545` with 10 test accounts.
+
+3. **Deploy contracts** (Terminal 2):
+   ```bash
+   npm run migrate:dev
+   ```
+   This automatically copies contract artifacts to `src/contracts/` (required for the app to work).
+
+4. **Configure MetaMask**:
+   - Add Network: `Ganache` with RPC `http://127.0.0.1:7545`, Chain ID `1337`
+   - Import a test account using its private key from Ganache
+
+5. **Run the app** (Terminal 3):
+   ```bash
+   npm start
+   ```
+   Opens at `http://localhost:3000`
+
+6. **Test it**:
+   - Sign in as **Client** or **Freelancer**
+   - Create projects, submit work, and test the escrow system
+   - Check browser console if you see any errors
+
+**Troubleshooting:** If contracts aren't found, ensure:
+- MetaMask is on Ganache network (Chain ID 1337)
+- Artifacts were copied to `src/contracts/`
+- Reload the browser after contract deployment
+
+---
+
 ## Installation and Setup
 
 ### Quick Start (Ganache Local Development)
@@ -264,6 +307,23 @@ lookup.
 
 ## Troubleshooting
 
+### ✅ Current Status - What's Working on Ganache
+
+After deployment, the following features work on your local Ganache network:
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **App Launch** | ✅ | No AbiError, app loads cleanly |
+| **Projects Contract** | ✅ | Deployed at address in `.env` |
+| **View All Projects** | ✅ | Freelancers can browse available projects |
+| **Create Projects** | ✅ | Clients can post new projects with milestones |
+| **Freelancer Profiles** | ✅ | View freelancer ratings and details |
+| **Quotation System** | ❌ | RequestManager not deployed on Ganache |
+| **Dispute Resolution** | ❌ | RequestManager not deployed on Ganache |
+| **Auto-payment via Escrow** | ⚠️ | Projects contract ready; full escrow requires RequestManager |
+
+---
+
 - **"AbiError: Parameter decoding error" or projects/milestones not loading**
   - **Cause:** Stale or mismatched contract artifacts in `src/contracts/`.
   - **Fix:** 
@@ -290,6 +350,36 @@ lookup.
   - Confirm the JSON artifact you copied contains the `networks` block with
     the correct chain ID and address. Redeploy and recopy if necessary.
   - Check the browser console for the log messages added by `getDeployedAddress`.
+
+- **RequestManager features unavailable (quotations, disputes, requests) on Ganache**
+  - **Cause:** RequestManager contract bytecode (27,626 bytes) exceeds Ganache's 24KB hard limit (24,576 bytes).
+  - **Current Status:** 
+    - ✅ **Projects.sol deployed successfully** and working on Ganache
+    - ❌ **RequestManager.sol cannot deploy** on Ganache (bytecode too large)
+  - **Frontend Behavior:** The app gracefully handles the missing RequestManager with a helpful error message.
+  - **What You Can Do Now on Ganache (Projects Contract Only):**
+    - ✅ Client can post projects with milestones and rewards
+    - ✅ Freelancer can view all available projects
+    - ✅ View freelancer profiles and ratings
+    - ✅ Test project creation and milestone setup
+    - ❌ Freelancer cannot propose quotations (needs RequestManager)
+    - ❌ Cannot resolve disputes (needs RequestManager)
+    - ❌ Cannot use the full escrow + quotation workflow
+  - **Error Message:** When freelancers try to propose a quotation, they'll see:
+    ```
+    "RequestManager contract is not deployed on this network. The quotation system 
+     requires RequestManager to be deployed. Please deploy RequestManager to a testnet 
+     like Sepolia or Mainnet where the 24KB bytecode limit does not apply."
+    ```
+  - **Solutions:**
+    1. **For full testing:** Deploy to **Sepolia testnet** instead (supports large contracts)
+       - Update `truffle-config.js` with Sepolia RPC details
+       - Run: `truffle migrate --network sepolia --reset`
+       - Update `.env` with Sepolia contract addresses
+    2. **For Ganache-only development:** Use the Projects-only workflow (current state)
+       - Test client project posting and freelancer browsing
+       - Good for UI/UX testing
+    3. **For production:** Consider splitting RequestManager into multiple smaller contracts using proxy patterns
 
 - **Ganache CLI not recognized**
   - Use `npm install` inside `Freelance` to add `ganache` binary. The script
@@ -378,21 +468,57 @@ want to refine the setup or add automation.
 
 ## Running the Application
 
-### Start the Development Server
+### 🎯 Quick Summary - What's Ready Now
 
-    npm start
+Your **Projects contract is deployed and working on Ganache**! You can now:
 
-### Open the DApp
+✅ **Create projects** as a client with custom milestones and rewards  
+✅ **Browse projects** as a freelancer  
+✅ **View freelancer profiles** and ratings  
+✅ **Test the UI/UX** for the marketplace functionality  
 
-- Open your browser and navigate to `http://localhost:3000`.
+⚠️ **RequestManager features are not available on Ganache** (quotations, disputes) due to bytecode size limits. See [Troubleshooting](#troubleshooting) for details and alternatives.
 
-### Dispute Resolution
+---
 
-1. If a freelancer raises a dispute, an anonymous arbitrator from Kleros is appointed to review the case.
-2. Based on the arbitrator's decision:
-   - If the client’s rejection is validated, funds remain in the contract.
-   - If the freelancer's submission is upheld, funds are released to the freelancer.
-3. **Automatic Rating Adjustment**:
-   - Ratings for both the client and freelancer are updated based on the arbitration outcome, influencing each party’s reputation on the platform.
+### Prerequisites are Met - Now Start the App
 
+After following the **Quick Start Guide** above, your app should be running. If not, verify:
+
+1. **All terminals are running**:
+   - Terminal 1: Ganache (`npm run ganache`)
+   - Terminal 2: Contracts deployed (`npm run migrate:dev`)
+   - Terminal 3: React app (`npm start`)
+
+2. **MetaMask is configured**:
+   - Connected to Ganache (Chain ID 1337)
+   - RPC URL: `http://127.0.0.1:7545`
+   - At least one test account imported
+
+3. **Visit the app**:
+   ```
+   http://localhost:3000
+   ```
+
+4. **Login and start**:
+   - Connect MetaMask when prompted
+   - Choose role (Client or Freelancer)
+   - Browse or post projects
+   - Escrow transactions execute instantly on Ganache (no gas fees)
+
+### If You See Errors
+
+**"AbiError: Parameter decoding error" or contracts not found**:
+- Run: `npm run copy-artifacts`
+- Reload the browser (`F5`)
+- Check browser console for network logs
+
+**MetaMask won't connect**:
+- Switch to Ganache network
+- Verify Chain ID is 1337
+- Reload the page
+
+**"ganache: command not found"**:
+- Run: `npm install` (from project root)
+- Or: `npm install -g ganache`
 

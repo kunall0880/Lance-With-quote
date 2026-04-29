@@ -3,10 +3,7 @@ import ProjectsContract from '../contracts/Projects.json';
 import RequestManagerContract from '../contracts/RequestManager.json';
 import { downloadFileFromIPFS } from './ipfs';
 
-const LOCAL_GANACHE_ADDRESSES = {
-  Projects: '0x02FF13191b0494e9152ac4C6575FF71b0c46B6CD',
-  RequestManager: '0xC984BA3b1A30764719FB98BA8Ba863cFB3F21227'
-};
+// Removed hardcoded LOCAL_GANACHE_ADDRESSES - always use fresh addresses from env or contract JSON
 
 // helper to pick contract address from deployed networks or fall back to an env var
 const getDeployedAddress = async (web3, contractJson, envVar) => {
@@ -18,13 +15,6 @@ const getDeployedAddress = async (web3, contractJson, envVar) => {
 
   const networkId = await web3.eth.net.getId();
   console.log(`Detected network ID: ${networkId}, contract: ${contractJson.contractName}`);
-  
-  // Override stale local Ganache addresses with the current deployed contract addresses
-  if (networkId === 5777 && LOCAL_GANACHE_ADDRESSES[contractJson.contractName]) {
-    const address = LOCAL_GANACHE_ADDRESSES[contractJson.contractName];
-    console.log(`Using hardcoded Ganache address for ${contractJson.contractName}: ${address}`);
-    return address;
-  }
 
   if (contractJson.networks && contractJson.networks[networkId]) {
     const address = contractJson.networks[networkId].address;
@@ -112,15 +102,27 @@ export const getProjectsContract = async () => {
 };
 
 // Initialize RequestManager contract instance (address resolved dynamically)
+// NOTE: RequestManager may not be deployed if it exceeds the 24KB bytecode limit on Ganache
 export const getRequestManagerContract = async () => {
-  const { web3 } = await connectWallet();
-  if (web3) {
-    const address = await getDeployedAddress(web3, RequestManagerContract, 'REACT_APP_REQUEST_MANAGER_ADDRESS');
-    if (!address) {
-      console.error('Unable to determine RequestManager contract address for current network.');
-      return null;
+  try {
+    const { web3 } = await connectWallet();
+    if (web3) {
+      const address = await getDeployedAddress(web3, RequestManagerContract, 'REACT_APP_REQUEST_MANAGER_ADDRESS');
+      if (!address) {
+        console.warn('RequestManager contract address not found - it may not be deployed.');
+        return null;
+      }
+      const contract = new web3.eth.Contract(RequestManagerContract.abi, address);
+      // Verify the contract exists at the address
+      const code = await web3.eth.getCode(address);
+      if (code === '0x') {
+        console.warn(`RequestManager contract not deployed at ${address}`);
+        return null;
+      }
+      return contract;
     }
-    return new web3.eth.Contract(RequestManagerContract.abi, address);
+  } catch (error) {
+    console.warn('Error loading RequestManager contract:', error.message);
   }
   return null;
 };
@@ -182,16 +184,13 @@ export const fetchAllProjects = async () => {
 // Function to raise dispute
 export const raiseDispute = async (milestoneId, projectId, account) => {
   const contract = await getRequestManagerContract();
+  if (!contract) {
+    console.warn('RequestManager contract is not deployed. Dispute feature unavailable.');
+    return { success: false, message: 'RequestManager contract not deployed. This feature is currently unavailable.' };
+  }
   if (contract) {
     try {
-      // First, get the arbitration cost
-      const arbitrator = await contract.methods.arbitrator().call();
-      const extraData = await contract.methods.arbitratorExtraData().call();
-      // Note: To get cost, we need the arbitrator contract, but for simplicity, assume we have it or hardcode for Kleros
-      // For now, assume a fixed cost or fetch from arbitrator
-      // Let's assume we have the arbitrator address, but to keep simple, let's pass a fixed fee or fetch
-      // Actually, since it's payable, we can estimate or set a value
-      // For demo, let's set a value
+      // Set a fixed arbitration fee for dispute
       const fee = Web3.utils.toWei('0.01', 'ether'); // Example fee
 
       await contract.methods.raiseDispute(milestoneId, projectId).send({
@@ -275,10 +274,18 @@ export const getMilestones = async (projectId) => {
       return [];
     }
     
-    // Call the contract function
-    const result = await contract.methods.getMilestones(projectId).call();
+    // Call the contract function with error handling
+    let result;
+    try {
+      result = await contract.methods.getMilestones(projectId).call();
+    } catch (decodeError) {
+      console.error('Raw decoding error:', decodeError);
+      console.error('This may indicate an ABI mismatch or contract version mismatch');
+      return [];
+    }
 
     // Destructure the returned object to match the Solidity return values
+    // The contract returns: ids, projectIds, names, descriptions, daycounts, percentages, statuses, freelancers, clients, amounts, proofFileHashes
     const ids = result[0];
     const projectIds = result[1];
     const names = result[2];
@@ -291,22 +298,46 @@ export const getMilestones = async (projectId) => {
     const amounts = result[9];
     const proofFileHashes = result[10];
 
-    // Map the milestones into an array of objects
-    return ids.map((id, index) => ({
-      id : id.toString(),
-      projectId: projectIds[index],
-      name: names[index],
-      description: descriptions[index],
-      daycount: daycounts[index].toString(),
-      percentage: percentages[index].toString(),
-      status: parseInt(statuses[index]),
-      freelancer: freelancers[index],
-      client: clients[index],
-      amount: amounts[index].toString(),
-      proof: proofFileHashes[index],
-    }));
+    // Verify we have the expected number of return values
+    if (!ids || !statuses) {
+      console.warn('Unexpected return structure from getMilestones');
+      return [];
+    }
+
+    // Map the milestones into an array of objects with safe conversion
+    return ids.map((id, index) => {
+      try {
+        const statusValue = parseInt(statuses[index]);
+        // Validate status is within expected range (0-4)
+        if (isNaN(statusValue) || statusValue < 0 || statusValue > 4) {
+          console.warn(`Invalid status value at index ${index}: ${statusValue}`);
+        }
+        
+        return {
+          id : id.toString(),
+          projectId: projectIds[index],
+          name: names[index],
+          description: descriptions[index],
+          daycount: daycounts[index].toString(),
+          percentage: percentages[index].toString(),
+          status: statusValue, // statuses is an enum (0=Pending, 1=Submitted, 2=Approved, 3=Disputed, 4=Resolved)
+          freelancer: freelancers[index],
+          client: clients[index],
+          amount: amounts[index].toString(),
+          proof: proofFileHashes[index],
+        };
+      } catch (itemError) {
+        console.error(`Error processing milestone at index ${index}:`, itemError);
+        return null;
+      }
+    }).filter(m => m !== null);
   } catch (error) {
     console.error('Error fetching milestones:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      data: error.data
+    });
     return []; // Return empty array on error
   }
 };
@@ -384,6 +415,10 @@ export const fetchRequestsByProjectId = async (projectId) => {
   try {
     console.log("Step 1: Getting contract instance...");
     const contract = await getRequestManagerContract(); // Get the instance of the RequestManager contract
+    if (!contract) {
+      console.warn('RequestManager contract not deployed. Returning empty requests list.');
+      return [];
+    }
     console.log("Step 2: Calling viewAllRequests...");
 
     // Call the contract function
@@ -412,13 +447,17 @@ export const fetchRequestsByProjectId = async (projectId) => {
     return filteredRequests; // Return the filtered array of requests
   } catch (error) {
     console.error("Error fetching requests by project ID:", error);
-    throw error; // Re-throw the error for further handling if needed
+    return []; // Return empty array on error
   }
 };
 
 export const acceptRequest = async (requestId, employer, projectReward, projectId) => {
   try {
     const requestManagerContract = await getRequestManagerContract();
+    if (!requestManagerContract) {
+      console.warn('RequestManager contract not deployed.');
+      throw new Error('RequestManager contract not deployed. This feature is currently unavailable.');
+    }
     
     console.log('Accepting request:', requestId, 'from:', employer, 'projectId:', projectId);
     
@@ -447,6 +486,10 @@ export const acceptRequest = async (requestId, employer, projectReward, projectI
 export const rejectRequest = async (requestId, employer) => {
   try {
     const contract = await getRequestManagerContract();
+    if (!contract) {
+      console.warn('RequestManager contract not deployed.');
+      throw new Error('RequestManager contract not deployed. This feature is currently unavailable.');
+    }
     console.log(1);
     await contract.methods.rejectRequest(requestId).send({
       from: employer,
@@ -475,8 +518,13 @@ export const fetchAcceptedProjectsByFreelancer = async (freelancer) => {
     const projectsContract = await getProjectsContract();
     const requestManagerContract = await getRequestManagerContract();
 
-    if (!projectsContract || !requestManagerContract) {
-      console.log("Contracts not available");
+    if (!projectsContract) {
+      console.log("Projects contract not available");
+      return [];
+    }
+
+    if (!requestManagerContract) {
+      console.log("RequestManager contract not deployed - accepting projects feature unavailable");
       return [];
     }
 
@@ -1117,7 +1165,11 @@ export const proposeQuotation = async (projectId, proposedAmount, description, s
     const contract = await getRequestManagerContract();
 
     if (!contract) {
-      throw new Error('RequestManager contract not available');
+      throw new Error(
+        'RequestManager contract is not deployed on this network. ' +
+        'The quotation system requires RequestManager to be deployed. ' +
+        'Please deploy RequestManager to a testnet like Sepolia or Mainnet where the 24KB bytecode limit does not apply.'
+      );
     }
 
     // Ensure a request exists for this project so acceptQuotation can assign a freelancer reliably.

@@ -5,6 +5,8 @@ contract Projects {
     
     enum Status { Closed, Open }
 
+    enum MilestoneStatus { Pending, InProgress, Completed, Rejected }
+
     struct Project {
         uint id;
         string name;
@@ -22,7 +24,11 @@ contract Projects {
         string description;
         uint daycount;
         uint percentage;
-        bool completed;
+        MilestoneStatus status;
+        address freelancer;
+        address client;
+        uint amount;
+        string proofFileHash;
     }
 
     mapping(uint => Project) public projects;
@@ -62,7 +68,11 @@ contract Projects {
             description: _description,
             daycount: _daycount,
             percentage: _percentage,
-            completed: false
+            status: MilestoneStatus.Pending,
+            freelancer: address(0),
+            client: projects[_projectId].employer,
+            amount: 0,
+            proofFileHash: ""
         }));
 
         emit MilestoneAdded(_projectId, milestoneCount, _name, _percentage);
@@ -154,7 +164,11 @@ function getMilestones(uint _projectId) public view returns (
     string[] memory descriptions,
     uint[] memory daycounts,
     uint[] memory percentages,
-    bool[] memory completions
+    MilestoneStatus[] memory statuses,
+    address[] memory freelancers,
+    address[] memory clients,
+    uint[] memory amounts,
+    string[] memory proofFileHashes
 ) {
     require(_projectId > 0 && _projectId <= projectCount, "Project does not exist");
     uint milestoneLength = milestones[_projectId].length;
@@ -165,7 +179,11 @@ function getMilestones(uint _projectId) public view returns (
     descriptions = new string[](milestoneLength);
     daycounts = new uint[](milestoneLength);
     percentages = new uint[](milestoneLength);
-    completions = new bool[](milestoneLength);
+    statuses = new MilestoneStatus[](milestoneLength);
+    freelancers = new address[](milestoneLength);
+    clients = new address[](milestoneLength);
+    amounts = new uint[](milestoneLength);
+    proofFileHashes = new string[](milestoneLength);
 
     for (uint i = 0; i < milestoneLength; i++) {
         Milestone storage milestone = milestones[_projectId][i];
@@ -175,7 +193,11 @@ function getMilestones(uint _projectId) public view returns (
         descriptions[i] = milestone.description;
         daycounts[i] = milestone.daycount;
         percentages[i] = milestone.percentage;
-        completions[i] = milestone.completed;
+        statuses[i] = milestone.status;
+        freelancers[i] = milestone.freelancer;
+        clients[i] = milestone.client;
+        amounts[i] = milestone.amount;
+        proofFileHashes[i] = milestone.proofFileHash;
     }
 }
 
@@ -196,7 +218,7 @@ function getMilestones(uint _projectId) public view returns (
 
         for (uint i = 0; i < projectMilestones.length; i++) {
             if (projectMilestones[i].id == _milestoneId) {
-                projectMilestones[i].completed = true;
+                projectMilestones[i].status = MilestoneStatus.Completed;
                 found = true;
                 break;
             }
