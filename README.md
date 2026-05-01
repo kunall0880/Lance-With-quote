@@ -168,6 +168,10 @@ If you want to **get the app running immediately**, follow these steps:
    ```powershell
    Copy-Item "truffle_project\build\contracts\Projects.json" "src\contracts\Projects.json" -Force
    Copy-Item "truffle_project\build\contracts\RequestManager.json" "src\contracts\RequestManager.json" -Force
+
+    Copy-Item -Path 'd:\Maj_proj\Lance-With-quote\truffle_project\build\contracts\RequestManager.json' -Destination 'd:\Maj_proj\Lance-With-quote\src\contracts\RequestManager.json' -Force
+
+   Copy-Item -Path 'd:\Maj_proj\Lance-With-quote\truffle_project\build\contracts\Projects.  json' -Destination 'd:\Maj_proj\Lance-With-quote\src\contracts\Projects.json' -Force
    ```
    
    **macOS/Linux:**
