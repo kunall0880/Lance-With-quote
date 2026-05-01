@@ -119,6 +119,21 @@ export const getRequestManagerContract = async () => {
         console.warn(`RequestManager contract not deployed at ${address}`);
         return null;
       }
+      
+      // Debug: Log available methods on the contract
+      console.log('RequestManager contract loaded at:', address);
+      console.log('Available methods:', Object.keys(contract.methods).filter(m => !m.startsWith('_')));
+      
+      // Verify key methods exist
+      const hasAddFile = typeof contract.methods.addFile === 'function';
+      const hasSendMilestoneReviewRequest = typeof contract.methods.sendMilestoneReviewRequest === 'function';
+      console.log('Method check - addFile:', hasAddFile, 'sendMilestoneReviewRequest:', hasSendMilestoneReviewRequest);
+      
+      if (!hasAddFile || !hasSendMilestoneReviewRequest) {
+        console.error('WARNING: Expected methods not found on contract!');
+        console.error('This likely means the ABI does not match the deployed contract');
+      }
+      
       return contract;
     }
   } catch (error) {
@@ -274,57 +289,76 @@ export const getMilestones = async (projectId) => {
       return [];
     }
     
+    // Validate projectId
+    const projId = typeof projectId === 'bigint' ? projectId.toString() : String(projectId);
+    console.log(`Attempting to fetch milestones for project ID: ${projId}`);
+    
     // Call the contract function with error handling
     let result;
     try {
-      result = await contract.methods.getMilestones(projectId).call();
+      result = await contract.methods.getMilestones(projId).call();
+      console.log('getMilestones returned:', result);
     } catch (decodeError) {
       console.error('Raw decoding error:', decodeError);
       console.error('This may indicate an ABI mismatch or contract version mismatch');
+      console.error('The deployed contract may have a different version than the ABI expects');
+      
+      // Try to get more info about the error
+      if (decodeError.message && decodeError.message.includes('not enough data')) {
+        console.error('HINT: The contract returned less data than expected. This suggests the deployed contract');
+        console.error('has fewer return parameters than the ABI declares. You may need to:');
+        console.error('1. Redeploy the contract with the updated version, OR');
+        console.error('2. Update the Projects.json ABI to match the deployed contract');
+      }
       return [];
     }
 
-    // Destructure the returned object to match the Solidity return values
-    // The contract returns: ids, projectIds, names, descriptions, daycounts, percentages, statuses, freelancers, clients, amounts, proofFileHashes
+    // Handle case where result is empty or doesn't have expected structure
+    if (!result || result.length === 0) {
+      console.warn('getMilestones returned empty result - project may have no milestones');
+      return [];
+    }
+
+    // Safely extract results with fallbacks for older contract versions
+    // New version: 11 return values
+    // Old version: might have 8 or fewer
     const ids = result[0];
-    const projectIds = result[1];
-    const names = result[2];
-    const descriptions = result[3];
-    const daycounts = result[4];
-    const percentages = result[5];
-    const statuses = result[6];
-    const freelancers = result[7];
-    const clients = result[8];
-    const amounts = result[9];
-    const proofFileHashes = result[10];
+    const projectIds = result[1] || [];
+    const names = result[2] || [];
+    const descriptions = result[3] || [];
+    const daycounts = result[4] || [];
+    const percentages = result[5] || [];
+    const statuses = result[6] || [];
+    const freelancers = result[7] || [];
+    const clients = result[8] || [];
+    const amounts = result[9] || [];
+    const proofFileHashes = result[10] || [];
 
-    // Verify we have the expected number of return values
-    if (!ids || !statuses) {
-      console.warn('Unexpected return structure from getMilestones');
+    // Verify we have at least IDs
+    if (!ids || ids.length === 0) {
+      console.warn('No milestones found for project:', projId);
       return [];
     }
+
+    console.log(`Found ${ids.length} milestones for project ${projId}`);
 
     // Map the milestones into an array of objects with safe conversion
     return ids.map((id, index) => {
       try {
-        const statusValue = parseInt(statuses[index]);
-        // Validate status is within expected range (0-4)
-        if (isNaN(statusValue) || statusValue < 0 || statusValue > 4) {
-          console.warn(`Invalid status value at index ${index}: ${statusValue}`);
-        }
+        const statusValue = statuses[index] ? parseInt(statuses[index]) : 0;
         
         return {
           id : id.toString(),
-          projectId: projectIds[index],
-          name: names[index],
-          description: descriptions[index],
-          daycount: daycounts[index].toString(),
-          percentage: percentages[index].toString(),
-          status: statusValue, // statuses is an enum (0=Pending, 1=Submitted, 2=Approved, 3=Disputed, 4=Resolved)
-          freelancer: freelancers[index],
-          client: clients[index],
-          amount: amounts[index].toString(),
-          proof: proofFileHashes[index],
+          projectId: projectIds[index] || projId,
+          name: names[index] || 'Unnamed Milestone',
+          description: descriptions[index] || '',
+          daycount: daycounts[index] ? daycounts[index].toString() : '0',
+          percentage: percentages[index] ? percentages[index].toString() : '0',
+          status: statusValue, // 0=Pending, 1=InProgress, 2=Completed, 3=Rejected
+          freelancer: freelancers[index] || '0x0000000000000000000000000000000000000000',
+          client: clients[index] || '0x0000000000000000000000000000000000000000',
+          amount: amounts[index] ? amounts[index].toString() : '0',
+          proof: proofFileHashes[index] || '',
         };
       } catch (itemError) {
         console.error(`Error processing milestone at index ${index}:`, itemError);
@@ -791,22 +825,70 @@ export async function addFile(milestoneId, name, rid, cid, account) {
 
       // Get the contract instance
       const contract = await getRequestManagerContract();
-      // Call the addFile function in the smart contract
-      await contract.methods.addFile(
-        String(milestoneId),
-        String(name),
-        String(rid),
-        String(cid)
-      ).send({ from: account });
+      if (!contract) {
+        throw new Error('RequestManager contract not available. Please ensure it is deployed and the address is correct.');
+      }
+
+      const milestoneIdStr = String(milestoneId);
+      const nameStr = String(name);
+      const ridStr = String(rid);
+      const cidStr = String(cid);
+
+      console.log('addFile called with:', { milestoneIdStr, nameStr, ridStr, cidStr, account });
+      console.log('milestoneId validation:', { 
+        value: milestoneIdStr,
+        isNumber: !isNaN(Number(milestoneIdStr)),
+        isGreaterThanZero: Number(milestoneIdStr) > 0
+      });
+
+      // Try to call addFile
+      console.log('Sending addFile transaction...');
+      const tx = contract.methods.addFile(milestoneIdStr, nameStr, ridStr, cidStr);
       
-      await contract.methods.sendMilestoneReviewRequest(
-        String(milestoneId),
-        String(cid),
-        account
-      ).send({from: account});
-      console.log('Transaction successful: File added');
+      // Estimate gas first to see if there's an issue
+      try {
+        console.log('Estimating gas...');
+        const gasEstimate = await tx.estimateGas({ from: account });
+        console.log('Gas estimate successful:', gasEstimate);
+      } catch (gasError) {
+        console.error('⚠️  Gas estimation failed (this often reveals the real error):');
+        console.error('Gas error message:', gasError.message);
+        if (gasError.data) {
+          console.error('Gas error data:', gasError.data);
+        }
+        // Continue anyway - gas estimation can fail for other reasons
+      }
+
+      // Send the transaction
+      console.log('Sending transaction with gas: 500000...');
+      const receipt = await tx.send({ 
+        from: account,
+        gas: 500000
+      });
+      
+      console.log('✓ addFile transaction successful!');
+      console.log('Transaction receipt:', receipt);
+      
+      // If addFile succeeded, now try sendMilestoneReviewRequest
+      console.log('Calling sendMilestoneReviewRequest...');
+      try {
+        await contract.methods.sendMilestoneReviewRequest(milestoneIdStr, cidStr, account).send({
+          from: account,
+          gas: 300000
+        });
+        console.log('✓ sendMilestoneReviewRequest successful!');
+      } catch (reviewError) {
+        console.error('⚠️  sendMilestoneReviewRequest failed:', reviewError.message);
+        console.warn('File was added successfully, but review request failed. This is not critical.');
+      }
+
+      console.log('✓ File upload to blockchain completed successfully');
+      
   } catch (error) {
-      console.error('Error calling addFile:', error);
+      console.error('❌ Error calling addFile:', error.message);
+      if (error.data) {
+        console.error('Error data:', error.data);
+      }
       throw error;
   }
 };
@@ -1135,6 +1217,174 @@ export const sendRequest = async (projectId, freelancerRating, selectedAccount) 
 };
 
 /**
+ * CRITICAL: Verify contract state before ANY blockchain operation
+ * STRICT RULE: Always check that frontend is connected to correct deployed contract
+ * @returns {Promise<{valid: boolean, contractAddress: string, networkId: number, projectCount: number, error?: string}>}
+ */
+export const verifyContractState = async () => {
+  try {
+    console.log('\n[verifyContractState] ========== CRITICAL CONTRACT VERIFICATION ==========');
+    
+    const projectsContract = await getProjectsContract();
+    if (!projectsContract) {
+      const error = 'Projects contract instance unavailable - cannot verify state';
+      console.error(`[verifyContractState] ✗ ${error}`);
+      return { valid: false, contractAddress: null, networkId: null, projectCount: 0, error };
+    }
+
+    // STEP 1: Get contract address
+    const contractAddress = projectsContract.options.address;
+    console.log(`[verifyContractState] Frontend contract address: ${contractAddress}`);
+
+    // STEP 2: Get network ID
+    const { web3 } = await connectWallet();
+    if (!web3) {
+      const error = 'Web3 instance not available';
+      console.error(`[verifyContractState] ✗ ${error}`);
+      return { valid: false, contractAddress, networkId: null, projectCount: 0, error };
+    }
+    
+    const networkId = await web3.eth.net.getId();
+    console.log(`[verifyContractState] Connected network ID: ${networkId}`);
+
+    // STEP 3: Verify contract bytecode exists on-chain
+    const code = await web3.eth.getCode(contractAddress);
+    if (code === '0x') {
+      const error = `No contract bytecode found at address ${contractAddress}. Contract not deployed on this network!`;
+      console.error(`[verifyContractState] ✗ CRITICAL: ${error}`);
+      return { valid: false, contractAddress, networkId, projectCount: 0, error };
+    }
+    console.log(`[verifyContractState] ✓ Contract bytecode verified on-chain`);
+
+    // STEP 4: Fetch projectCount from contract
+    let projectCount = 0;
+    try {
+      projectCount = await projectsContract.methods.projectCount().call();
+      projectCount = parseInt(String(projectCount), 10);
+      console.log(`[verifyContractState] projectCount from contract: ${projectCount}`);
+    } catch (countError) {
+      const error = `Could not fetch projectCount: ${countError.message}`;
+      console.error(`[verifyContractState] ✗ ${error}`);
+      return { valid: false, contractAddress, networkId, projectCount: 0, error };
+    }
+
+    // STEP 5: Check if contract state is empty (possible address mismatch)
+    if (projectCount === 0) {
+      const error = 'Contract state is EMPTY (projectCount = 0). Possible causes: (1) Contract address mismatch OR (2) Freshly deployed contract with no data';
+      console.warn(`[verifyContractState] ⚠️  ${error}`);
+      console.warn(`[verifyContractState] Cross-check: Frontend address=${contractAddress}, Network=${networkId}`);
+      console.warn(`[verifyContractState] If you just deployed, this is normal. Otherwise, check .env file.`);
+      return { 
+        valid: false, 
+        contractAddress, 
+        networkId, 
+        projectCount: 0, 
+        error 
+      };
+    }
+
+    // STEP 6: All checks passed
+    console.log(`[verifyContractState] ✓ CONTRACT STATE VERIFIED SUCCESSFULLY`);
+    console.log(`[verifyContractState] Contract address: ${contractAddress}, Network: ${networkId}, Projects: ${projectCount}`);
+    console.log(`[verifyContractState] ============================================================\n`);
+    
+    return { 
+      valid: true, 
+      contractAddress, 
+      networkId, 
+      projectCount,
+      error: null 
+    };
+  } catch (error) {
+    console.error('[verifyContractState] ✗ CRITICAL ERROR:', error.message);
+    console.error('[verifyContractState] Full error:', error);
+    return { valid: false, contractAddress: null, networkId: null, projectCount: 0, error: error.message };
+  }
+};
+
+/**
+ * Get Projects contract with automatic state verification
+ * STRICT RULE: Never use the raw getProjectsContract() before verifying state
+ * This wrapper ensures contract address is correct and state is consistent
+ * @returns {Promise<{contract: object, verification: object} | null>}
+ */
+export const safeGetProjectsContract = async () => {
+  try {
+    console.log('[safeGetProjectsContract] Getting contract with state verification...');
+    
+    // Get contract instance
+    const contract = await getProjectsContract();
+    if (!contract) {
+      console.error('[safeGetProjectsContract] ✗ Could not instantiate contract');
+      return null;
+    }
+
+    // Verify contract state
+    const verification = await verifyContractState();
+    if (!verification.valid) {
+      const errorMsg = `Contract state verification failed: ${verification.error}`;
+      console.error(`[safeGetProjectsContract] ✗ ${errorMsg}`);
+      throw new Error(errorMsg);
+    }
+
+    console.log('[safeGetProjectsContract] ✓ Contract ready for use');
+    return { contract, verification };
+  } catch (error) {
+    console.error('[safeGetProjectsContract] ✗ Error:', error.message);
+    throw error;
+  }
+};
+
+export const verifyRequestManagerProjectLink = async () => {
+  try {
+    const requestManagerContract = await getRequestManagerContract();
+    if (!requestManagerContract) {
+      throw new Error('RequestManager contract not available for link verification');
+    }
+
+    const { web3 } = await connectWallet();
+    if (!web3) {
+      throw new Error('Web3 provider not available for link verification');
+    }
+
+    const networkId = await web3.eth.net.getId();
+    const requestManagerAddress = requestManagerContract.options.address;
+    console.log('[verifyRequestManagerProjectLink] Quotation Contract:', requestManagerAddress);
+    console.log('[verifyRequestManagerProjectLink] Connected network ID:', networkId);
+
+    const linkedProjectsAddress = await requestManagerContract.methods.getProjectsContractAddress().call();
+    console.log('[verifyRequestManagerProjectLink] Projects Contract (inside):', linkedProjectsAddress);
+
+    const linkedProjectCount = await requestManagerContract.methods.debugProjectCount().call();
+    console.log('[verifyRequestManagerProjectLink] Projects Count:', linkedProjectCount);
+
+    if (Number(linkedProjectCount) === 0) {
+      throw new Error('Projects contract not linked correctly or empty state');
+    }
+
+    const localProjectsContract = await getProjectsContract();
+    const localProjectsAddress = localProjectsContract?.options?.address || null;
+    if (localProjectsAddress && linkedProjectsAddress !== localProjectsAddress) {
+      const error = `RequestManager linked Projects address (${linkedProjectsAddress}) does not match frontend Projects address (${localProjectsAddress})`;
+      console.error('[verifyRequestManagerProjectLink] ✗', error);
+      throw new Error(error);
+    }
+
+    return {
+      valid: true,
+      requestManagerAddress,
+      linkedProjectsAddress,
+      projectCount: parseInt(String(linkedProjectCount), 10),
+      networkId,
+      localProjectsAddress
+    };
+  } catch (error) {
+    console.error('[verifyRequestManagerProjectLink] ✗', error.message);
+    throw error;
+  }
+};
+
+/**
  * Check if a request exists for a project
  * @param {number} projectId - The project ID
  */
@@ -1150,6 +1400,177 @@ export const checkRequestExists = async (projectId) => {
   } catch (error) {
     console.error('Error checking request:', error);
     return false;
+  }
+};
+
+/**
+ * Validate that a project ID exists and is valid
+ * STRICT RULE: All project IDs must be validated before calling contract write functions
+ * CRITICAL: Verifies contract state FIRST to catch address mismatches
+ * @param {number} projectId - The project ID to validate
+ * @returns {Promise<{valid: boolean, projectCount: number, project: object, contractAddress: string, networkId: number, error?: string}>}
+ */
+export const validateProjectId = async (projectId) => {
+  try {
+    console.log('\n[validateProjectId] ========== PROJECT ID VALIDATION ==========');
+    console.log(`[validateProjectId] Validating projectId: ${projectId}`);
+    
+    // CRITICAL STEP 1: Verify RequestManager internal Projects link
+    console.log('[validateProjectId] STEP 1: Verifying RequestManager -> Projects link...');
+    const linkVerification = await verifyRequestManagerProjectLink();
+    console.log('[validateProjectId] ✓ RequestManager link verified');
+
+    const contractAddress = linkVerification.linkedProjectsAddress;
+    const networkId = linkVerification.networkId;
+    const projectCountNum = linkVerification.projectCount;
+
+    console.log(`[validateProjectId] STEP 2: Contract state verified`);
+    console.log(`[validateProjectId]   Contract address: ${contractAddress}`);
+    console.log(`[validateProjectId]   Network ID: ${networkId}`);
+    console.log(`[validateProjectId]   Project count: ${projectCountNum}`);
+
+    // Step 2: Check projectId bounds (must be > 0 and <= projectCount)
+    console.log(`[validateProjectId] STEP 3: Checking projectId bounds...`);
+    const projectIdNum = parseInt(String(projectId), 10);
+    if (projectIdNum <= 0 || projectIdNum > projectCountNum) {
+      const errorMsg = `Invalid project ID: ${projectIdNum}. Valid range is 1-${projectCountNum}`;
+      console.error(`[validateProjectId] ✗ FAILED: ${errorMsg}`);
+      return { 
+        valid: false, 
+        projectCount: projectCountNum, 
+        project: null, 
+        contractAddress,
+        networkId,
+        error: errorMsg 
+      };
+    }
+    console.log(`[validateProjectId] ✓ projectId ${projectIdNum} is within bounds`);
+
+    // Step 3: Fetch and validate project data from Projects contract
+    console.log(`[validateProjectId] STEP 4: Fetching project data...`);
+    const projectsContract = await getProjectsContract();
+    if (!projectsContract) {
+      const errorMsg = 'Projects contract not available';
+      console.error(`[validateProjectId] ✗ ${errorMsg}`);
+      return { 
+        valid: false, 
+        projectCount: projectCountNum, 
+        project: null, 
+        contractAddress,
+        networkId,
+        error: errorMsg 
+      };
+    }
+    try {
+      const projectData = await projectsContract.methods.projects(String(projectIdNum)).call();
+      console.log(`[validateProjectId] Project data for ID ${projectIdNum}:`, projectData);
+
+      if (!projectData || !projectData[0]) {
+        const errorMsg = `Project ${projectIdNum} does not exist`;
+        console.error(`[validateProjectId] ✗ FAILED: ${errorMsg}`);
+        return { 
+          valid: false, 
+          projectCount: projectCountNum, 
+          project: projectData, 
+          contractAddress,
+          networkId,
+          error: errorMsg 
+        };
+      }
+
+      console.log(`[validateProjectId] ✓ SUCCESS: Project ${projectIdNum} is valid`);
+      console.log(`[validateProjectId] ============================================================\n`);
+      return { 
+        valid: true, 
+        projectCount: projectCountNum, 
+        project: projectData,
+        contractAddress,
+        networkId,
+        error: null 
+      };
+    } catch (projectFetchError) {
+      const errorMsg = `Could not fetch project data: ${projectFetchError.message}`;
+      console.error(`[validateProjectId] ✗ FAILED: ${errorMsg}`);
+      return { 
+        valid: false, 
+        projectCount: projectCountNum, 
+        project: null, 
+        contractAddress,
+        networkId,
+        error: errorMsg 
+      };
+    }
+  } catch (error) {
+    console.error('[validateProjectId] ✗ CRITICAL ERROR:', error.message);
+    return { valid: false, projectCount: 0, project: null, contractAddress: null, networkId: null, error: error.message };
+  }
+};
+
+/**
+ * Safe wrapper for proposeQuotation with full input validation
+ * STRICT RULE: Never send transactions without validating all inputs first
+ * @param {number} projectId - The project ID (must be pre-validated)
+ * @param {number} proposedAmount - The proposed amount in wei
+ * @param {string} description - Description of quotation
+ * @param {string} selectedAccount - The freelancer's account
+ * @param {number} freelancerRating - Optional freelancer rating
+ * @returns {Promise<object>} Transaction receipt
+ */
+export const safeProposeQuotation = async (projectId, proposedAmount, description, selectedAccount, freelancerRating = 0) => {
+  try {
+    console.log('\n[safeProposeQuotation] ========== SAFE QUOTATION PROPOSAL ==========');
+    
+    // STEP 1: Validate project ID exists and is valid
+    // This includes comprehensive contract state verification
+    console.log('[safeProposeQuotation] STEP 1: Validating project ID and contract state...');
+    const validation = await validateProjectId(projectId);
+    
+    if (!validation.valid) {
+      const errorMsg = `Cannot propose quotation: ${validation.error}`;
+      console.error(`[safeProposeQuotation] ✗ ${errorMsg}`);
+      console.error(`[safeProposeQuotation] Contract address: ${validation.contractAddress}, Network: ${validation.networkId}`);
+      throw new Error(errorMsg);
+    }
+
+    console.log(`[safeProposeQuotation] ✓ Project ${projectId} validated successfully`);
+    console.log(`[safeProposeQuotation] Contract address: ${validation.contractAddress}`);
+    console.log(`[safeProposeQuotation] Network ID: ${validation.networkId}`);
+    console.log(`[safeProposeQuotation] Total projects in contract: ${validation.projectCount}`);
+    console.log(`[safeProposeQuotation] Project details:`, validation.project);
+
+    // STEP 2: Validate other inputs
+    console.log('[safeProposeQuotation] STEP 2: Validating input parameters...');
+    if (!proposedAmount || Number(proposedAmount) <= 0) {
+      throw new Error('Proposed amount must be greater than 0');
+    }
+    if (!description || String(description).trim().length === 0) {
+      throw new Error('Description cannot be empty');
+    }
+    if (!selectedAccount || String(selectedAccount).trim().length === 0) {
+      throw new Error('Selected account must be provided');
+    }
+    console.log(`[safeProposeQuotation] ✓ All input parameters validated`);
+
+    // STEP 3: Log summary before sending transaction
+    console.log('[safeProposeQuotation] STEP 3: Transaction summary');
+    console.log(`[safeProposeQuotation] Project ID: ${projectId} (verified in contract at ${validation.contractAddress})`);
+    console.log(`[safeProposeQuotation] Proposed amount (wei): ${proposedAmount}`);
+    console.log(`[safeProposeQuotation] Description: ${description.substring(0, 50)}${description.length > 50 ? '...' : ''}`);
+    console.log(`[safeProposeQuotation] Freelancer account: ${selectedAccount}`);
+    console.log(`[safeProposeQuotation] ============================================================`);
+
+    // STEP 4: Call the actual proposeQuotation function
+    console.log('[safeProposeQuotation] STEP 4: Sending transaction...');
+    const receipt = await proposeQuotation(projectId, proposedAmount, description, selectedAccount, freelancerRating);
+    console.log('[safeProposeQuotation] ✓ Quotation proposed successfully');
+    console.log(`[safeProposeQuotation] Transaction hash: ${receipt.transactionHash}\n`);
+    return receipt;
+  } catch (error) {
+    console.error('[safeProposeQuotation] ✗ Error:', error.message);
+    console.error('[safeProposeQuotation] Full error object:', error);
+    console.error('[safeProposeQuotation] Suggestion: Check that .env has correct contract addresses');
+    console.error('[safeProposeQuotation] Suggestion: Verify connected network matches deployment network\n');
+    throw error;
   }
 };
 

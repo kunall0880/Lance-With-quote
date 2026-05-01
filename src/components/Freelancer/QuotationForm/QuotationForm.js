@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Web3 from 'web3';
-import { proposeQuotation } from '../../../services/web3';
+import { safeProposeQuotation } from '../../../services/web3';
 import './QuotationForm.css';
 
 const QuotationForm = ({ projectId, projectReward, freelancerAddress, freelancerRating, onSuccess }) => {
@@ -33,11 +33,12 @@ const QuotationForm = ({ projectId, projectReward, freelancerAddress, freelancer
     setIsSubmitting(true);
 
     try {
-      // Propose quotation directly (no need for legacy request system)
+      // Propose quotation using safe wrapper with full validation
       const amountInWei = web3.utils.toWei(amount.toString(), 'ether');
       console.log('Proposing quotation with:', { projectId, amountInWei, description, freelancerAddress });
       
-      const quotationReceipt = await proposeQuotation(
+      // Use safeProposeQuotation which validates project ID before sending transaction
+      const quotationReceipt = await safeProposeQuotation(
         projectId,
         amountInWei,
         description,

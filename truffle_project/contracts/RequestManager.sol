@@ -3,15 +3,6 @@ pragma solidity ^0.8.0;
 
 import "./Projects.sol";
 
-interface IArbitrable {
-    function rule(uint256 _disputeID, uint256 _ruling) external;
-}
-
-interface IArbitrator {
-    function createDispute(uint256 _choices, bytes calldata _extraData) external payable returns (uint256 disputeID);
-    function arbitrationCost(bytes calldata _extraData) external view returns (uint256 cost);
-}
-
 contract Escrow {
     address public freelancer;
     address public employer;
@@ -27,16 +18,13 @@ contract Escrow {
 
     function releaseFunds() external {
         require(msg.sender == employer || msg.sender == requestManager, "Only the employer or RequestManager can release funds");
-        payable(freelancer).transfer(amount);
+        (bool success, ) = payable(freelancer).call{value: amount}("");
+        require(success, "Transfer failed");
     }
 }
 
-contract RequestManager is IArbitrable {
+contract RequestManager {
     Projects public projectsContract;
-
-    IArbitrator public arbitrator;
-    bytes public arbitratorExtraData;
-    mapping(uint => uint[2]) public disputeToProjectMilestone; // [projectId, milestoneId]
 
     enum RequestStatus { Pending, Accepted, Rejected }
     enum QuotationStatus { Pending, Proposed, Negotiating, Accepted, Rejected }
@@ -83,37 +71,6 @@ contract RequestManager is IArbitrable {
         bool accepted;
     }
     
-    struct RequestDraft {
-        uint id;
-        uint requestId;
-        uint projectId;
-        address freelancer;
-        address employer;
-        string draftContent; // Could be description or proposal
-        uint timestamp;
-        bool reviewed;
-    }
-    
-    struct FreelancerRating {
-        uint ratingId;
-        uint requestId;
-        address rater; // employer
-        address freelancer;
-        uint rating; // 1-5 stars
-        string review;
-        uint timestamp;
-    }
-    
-    struct ProjectCompletion {
-        uint completionId;
-        uint projectId;
-        uint requestId;
-        address employer;
-        address freelancer;
-        bool isCompleted;
-        uint completionTime;
-    }
-    
     mapping(uint => ReviewResponse) public reviewResponses;
     uint public responseCount;
 
@@ -132,18 +89,6 @@ contract RequestManager is IArbitrable {
     mapping(uint => MilestoneReviewRequest) public milestoneReviewRequests;
     uint public milestoneReviewRequestCount;
 
-    // New mappings for additional features
-    mapping(uint => RequestDraft) public requestDrafts;
-    uint public requestDraftCount;
-    
-    mapping(uint => FreelancerRating) public freelancerRatings;
-    uint public freelancerRatingCount;
-    
-    mapping(uint => ProjectCompletion) public projectCompletions;
-    uint public projectCompletionCount;
-    
-    mapping(address => uint[]) public freelancerRatingsList; // Track ratings per freelancer
-
     event RequestSent(uint requestId, uint projectId, address freelancer);
     event RequestAccepted(uint requestId, address freelancer, address escrowContract);
     event RequestRejected(uint requestId, address freelancer);
@@ -155,17 +100,18 @@ contract RequestManager is IArbitrable {
     event MilestoneAccepted(uint projectId, uint milestoneId, uint updatedRating);
     event MilestoneReviewRequestRejected(uint indexed reviewRequestId, string reason);
     event RejectionReasonAccepted(uint _reviewRequestId);
-    event RequestDraftSent(uint draftId, uint requestId, address freelancer, address employer);
-    event FreelancerRatingSubmitted(uint ratingId, address rater, address freelancer, uint rating);
-    event ProjectCompleted(uint projectId, uint requestId, address employer, address freelancer);
     event EscrowReleased(uint requestId, address escrowContract, uint amount);
-    event DisputeRaised(uint disputeId, uint milestoneId, uint projectId);
-    event DisputeResolved(uint disputeId, uint ruling);
 
-    constructor(address _projectsContract, address _arbitrator, bytes memory _extraData) {
+    constructor(address _projectsContract) {
         projectsContract = Projects(_projectsContract);
-        arbitrator = IArbitrator(_arbitrator);
-        arbitratorExtraData = _extraData;
+    }
+
+    function getProjectsContractAddress() public view returns (address) {
+        return address(projectsContract);
+    }
+
+    function debugProjectCount() public view returns (uint) {
+        return projectsContract.projectCount();
     }
 
     function sendRequest(uint _projectId, uint _freelancerRating) public {
@@ -232,7 +178,7 @@ contract RequestManager is IArbitrable {
         uint[] memory requestIds,
         uint[] memory projectIds,
         address[] memory freelancers,
-        uint[] memory freelancerRatings,
+        uint[] memory ratings,
         RequestStatus[] memory statuses,
         address[] memory escrowContracts
     ) {
@@ -242,7 +188,7 @@ contract RequestManager is IArbitrable {
         requestIds = new uint[](count);
         projectIds = new uint[](count);
         freelancers = new address[](count);
-        freelancerRatings = new uint[](count);
+        ratings = new uint[](count);
         statuses = new RequestStatus[](count);
         escrowContracts = new address[](count);
 
@@ -252,12 +198,12 @@ contract RequestManager is IArbitrable {
             requestIds[i - 1] = i;
             projectIds[i - 1] = request.projectId;
             freelancers[i - 1] = request.freelancer;
-            freelancerRatings[i - 1] = request.freelancerRating;
+            ratings[i - 1] = request.freelancerRating;
             statuses[i - 1] = request.status;
             escrowContracts[i - 1] = address(request.escrowContract);
         }
 
-        return (requestIds, projectIds, freelancers, freelancerRatings, statuses, escrowContracts);
+        return (requestIds, projectIds, freelancers, ratings, statuses, escrowContracts);
     }
 
 
@@ -356,7 +302,7 @@ contract RequestManager is IArbitrable {
             uint[] memory requestIds,
             uint[] memory projectIds,
             address[] memory freelancers,
-            uint[] memory freelancerRatings,
+            uint[] memory ratings,
             RequestStatus[] memory statuses,
             address[] memory escrowContracts
         ) {
@@ -375,7 +321,7 @@ contract RequestManager is IArbitrable {
             requestIds = new uint[](count);
             projectIds = new uint[](count);
             freelancers = new address[](count);
-            freelancerRatings = new uint[](count);
+            ratings = new uint[](count);
             statuses = new RequestStatus[](count);
             escrowContracts = new address[](count);
 
@@ -390,14 +336,14 @@ contract RequestManager is IArbitrable {
                     requestIds[index] = i;
                     projectIds[index] = request.projectId;
                     freelancers[index] = request.freelancer;
-                    freelancerRatings[index] = request.freelancerRating;
+                    ratings[index] = request.freelancerRating;
                     statuses[index] = request.status;
                     escrowContracts[index] = address(request.escrowContract);
                     index++;
                 }
             }
 
-            return (requestIds, projectIds, freelancers, freelancerRatings, statuses, escrowContracts);
+            return (requestIds, projectIds, freelancers, ratings, statuses, escrowContracts);
     }
 
     function sendMilestoneReviewRequest(uint _milestoneId, string calldata _cid, address _freelancer) public {
@@ -465,111 +411,6 @@ contract RequestManager is IArbitrable {
         revert("No matching request found for this review request");
     }
 
-    function raiseDispute(uint milestoneId, uint projectId) external payable {
-        // Get milestone details
-        (
-            uint[] memory ids,
-            ,
-            ,
-            ,
-            ,
-            ,
-            Projects.MilestoneStatus[] memory statuses,
-            address[] memory freelancers,
-            address[] memory clients,
-            ,
-            
-        ) = projectsContract.getMilestones(projectId);
-
-        uint index = milestoneId - 1;
-        require(index < ids.length && ids[index] == milestoneId, "Invalid milestone");
-        require(statuses[index] == Projects.MilestoneStatus.Submitted, "Milestone not in submitted state");
-        require(msg.sender == freelancers[index] || msg.sender == clients[index], "Only freelancer or client can raise dispute");
-
-        // Fetch arbitration cost
-        uint cost = arbitrator.arbitrationCost(arbitratorExtraData);
-        require(msg.value >= cost, "Insufficient arbitration fee");
-
-        // Create dispute
-        uint disputeID = arbitrator.createDispute{value: cost}(2, arbitratorExtraData); // 2 choices: freelancer wins or client wins
-
-        // Store mapping
-        disputeToProjectMilestone[disputeID] = [projectId, milestoneId];
-
-        // Update milestone status to Disputed
-        // Note: Need to add a function in Projects to set status
-        // For now, assume we add it
-        projectsContract.setMilestoneStatus(projectId, milestoneId, Projects.MilestoneStatus.Disputed);
-
-        emit DisputeRaised(disputeID, milestoneId, projectId);
-    }
-
-    function rule(uint disputeID, uint ruling) external override {
-        require(msg.sender == address(arbitrator), "Only arbitrator can rule");
-
-        uint[2] memory pm = disputeToProjectMilestone[disputeID];
-        require(pm[0] != 0 || pm[1] != 0, "Dispute not found");
-
-        uint projectId = pm[0];
-        uint milestoneId = pm[1];
-
-        if (ruling == 1) {
-            // Freelancer wins
-            projectsContract.setMilestoneStatus(projectId, milestoneId, Projects.MilestoneStatus.Approved);
-            // Release funds for this milestone
-            // But since escrow is for all, perhaps release all if all approved
-            // For simplicity, check if all approved and release
-            checkAndReleaseEscrow(projectId);
-        } else if (ruling == 2) {
-            // Client wins
-            projectsContract.setMilestoneStatus(projectId, milestoneId, Projects.MilestoneStatus.Resolved);
-            // Funds stay in escrow or refund to client? For simplicity, do nothing or refund
-            // Since escrow is locked, perhaps refund to client
-            // But to keep simple, just mark resolved
-        } else if (ruling == 0) {
-            // Split or something, but for simplicity, mark resolved
-            projectsContract.setMilestoneStatus(projectId, milestoneId, Projects.MilestoneStatus.Resolved);
-        }
-
-        emit DisputeResolved(disputeID, ruling);
-    }
-
-    function checkAndReleaseEscrow(uint projectId) internal {
-        (
-            ,
-            ,
-            ,
-            ,
-            ,
-            ,
-            Projects.MilestoneStatus[] memory statuses,
-            ,
-            ,
-            ,
-            
-        ) = projectsContract.getMilestones(projectId);
-
-        bool allApproved = true;
-        for (uint i = 0; i < statuses.length; i++) {
-            if (statuses[i] != Projects.MilestoneStatus.Approved) {
-                allApproved = false;
-                break;
-            }
-        }
-
-        if (allApproved) {
-            // Get escrow and release
-            uint requestId = projectToRequest[projectId];
-            Request storage request = requests[requestId];
-            Escrow escrow = request.escrowContract;
-            uint escrowAmount = escrow.amount();
-            escrow.releaseFunds();
-            emit EscrowReleased(requestId, address(escrow), escrowAmount);
-        }
-    }
-
-
-
     function acceptMilestoneReviewRequest(uint _reviewRequestId, uint _projId) public payable {
         // Fetch the  request using the ID
         MilestoneReviewRequest storage reviewRequest = milestoneReviewRequests[_reviewRequestId];
@@ -581,7 +422,7 @@ contract RequestManager is IArbitrable {
         // Retrieve the associated milestones for the project
         (
             uint[] memory ids,
-            uint[] memory projectIds,
+            uint[] memory _projectIds,
             string[] memory names,
             string[] memory descriptions,
             uint[] memory daycounts,
@@ -606,7 +447,9 @@ contract RequestManager is IArbitrable {
         string memory milestoneProofFileHash;
 
         // Fetch project details and validate the caller is the employer
-        (, , , , Projects.Status projectStatus, address employer, ) = projectsContract.getProject(_projId);
+        (, , , , Projects.Status _status, address employer, ) = projectsContract.getProject(_projId);
+        _projectIds.length;
+        _status;
         require(msg.sender == employer, "Only the employer can accept milestone review requests");
 
         // Search for the milestone with the specified milestoneId
@@ -844,63 +687,6 @@ contract RequestManager is IArbitrable {
     }
 
 
-    function viewAcceptedProjectsByFreelancer(address freelancer) public view returns (
-        uint[] memory ids, 
-        string[] memory names, 
-        string[] memory descriptions, 
-        uint[] memory rewards, 
-        Projects.Status[] memory statuses, // Change here to use Projects.Status
-        address[] memory employers
-    ) {
-        // Temporary storage for matched projects
-        uint[] memory tempIds = new uint[](requestCount); 
-        string[] memory tempNames = new string[](requestCount);
-        string[] memory tempDescriptions = new string[](requestCount);
-        uint[] memory tempRewards = new uint[](requestCount);
-        Projects.Status[] memory tempStatuses = new Projects.Status[](requestCount); // Change here to use Projects.Status
-        address[] memory tempEmployers = new address[](requestCount);
-
-        uint matchCount = 0; // Count of matched projects
-
-        for (uint i = 1; i <= requestCount; i++) {
-            Request storage req = requests[i];
-            if (req.status == RequestStatus.Accepted && req.freelancer == freelancer) {
-                // Unpack the return values from getProject
-                (uint id, string memory name, string memory description, uint reward, Projects.Status status, address employer, ) = 
-                    projectsContract.getProject(req.projectId); // Call the function
-                
-                // Assign the unpacked values to temporary storage
-                tempIds[matchCount] = id;
-                tempNames[matchCount] = name;
-                tempDescriptions[matchCount] = description;
-                tempRewards[matchCount] = reward;
-                tempStatuses[matchCount] = status;
-                tempEmployers[matchCount] = employer;
-                matchCount++;
-            }
-        }
-
-        // Create memory arrays of the exact size of matches found
-        ids = new uint[](matchCount);
-        names = new string[](matchCount);
-        descriptions = new string[](matchCount);
-        rewards = new uint[](matchCount);
-        statuses = new Projects.Status[](matchCount); // Change here to use Projects.Status
-        employers = new address[](matchCount);
-
-        for (uint j = 0; j < matchCount; j++) {
-            ids[j] = tempIds[j];
-            names[j] = tempNames[j];
-            descriptions[j] = tempDescriptions[j];
-            rewards[j] = tempRewards[j];
-            statuses[j] = tempStatuses[j];
-            employers[j] = tempEmployers[j];
-        }
-
-        return (ids, names, descriptions, rewards, statuses, employers);
-    }
-    
-
     function addFile(
         uint _milestoneId, 
         string memory _name, 
@@ -962,147 +748,6 @@ contract RequestManager is IArbitrable {
     /**
      * Send a request draft from freelancer to employer (client)
      */
-    function sendRequestDraft(uint _requestId, string memory _draftContent) public {
-        Request storage request = requests[_requestId];
-        require(request.freelancer != address(0), "Request does not exist");
-        require(request.freelancer == msg.sender, "Only the freelancer can send drafts");
-        
-        // Get employer address from project
-        (,, , , , address employer, ) = projectsContract.getProject(request.projectId);
-        
-        requestDraftCount++;
-        requestDrafts[requestDraftCount] = RequestDraft({
-            id: requestDraftCount,
-            requestId: _requestId,
-            projectId: request.projectId,
-            freelancer: msg.sender,
-            employer: employer,
-            draftContent: _draftContent,
-            timestamp: block.timestamp,
-            reviewed: false
-        });
-        
-        emit RequestDraftSent(requestDraftCount, _requestId, msg.sender, employer);
-    }
-
-    /**
-     * Get all request drafts for a specific request
-     */
-    function getRequestDrafts(uint _requestId) public view returns (RequestDraft[] memory) {
-        uint count = 0;
-        for (uint i = 1; i <= requestDraftCount; i++) {
-            if (requestDrafts[i].requestId == _requestId) {
-                count++;
-            }
-        }
-        
-        RequestDraft[] memory drafts = new RequestDraft[](count);
-        uint index = 0;
-        for (uint i = 1; i <= requestDraftCount; i++) {
-            if (requestDrafts[i].requestId == _requestId) {
-                drafts[index] = requestDrafts[i];
-                index++;
-            }
-        }
-        return drafts;
-    }
-
-    /**
-     * Allows employer (client) to rate freelancer
-     */
-    function rateFreelancer(uint _requestId, uint _rating, string memory _review) public {
-        require(_rating > 0 && _rating <= 5, "Rating must be between 1 and 5");
-        
-        Request storage request = requests[_requestId];
-        require(request.freelancer != address(0), "Request does not exist");
-        
-        // Get employer address from project
-        (,, , , , address employer, ) = projectsContract.getProject(request.projectId);
-        require(msg.sender == employer, "Only the employer can rate the freelancer");
-        
-        freelancerRatingCount++;
-        freelancerRatings[freelancerRatingCount] = FreelancerRating({
-            ratingId: freelancerRatingCount,
-            requestId: _requestId,
-            rater: msg.sender,
-            freelancer: request.freelancer,
-            rating: _rating,
-            review: _review,
-            timestamp: block.timestamp
-        });
-        
-        freelancerRatingsList[request.freelancer].push(freelancerRatingCount);
-        
-        emit FreelancerRatingSubmitted(freelancerRatingCount, msg.sender, request.freelancer, _rating);
-    }
-
-    /**
-     * Get all ratings for a specific freelancer
-     */
-    function getFreelancerRatings(address _freelancer) public view returns (FreelancerRating[] memory) {
-        uint[] memory ratingIds = freelancerRatingsList[_freelancer];
-        FreelancerRating[] memory ratings = new FreelancerRating[](ratingIds.length);
-        
-        for (uint i = 0; i < ratingIds.length; i++) {
-            ratings[i] = freelancerRatings[ratingIds[i]];
-        }
-        
-        return ratings;
-    }
-
-    /**
-     * Get average rating for a freelancer
-     */
-    function getFreelancerAverageRating(address _freelancer) public view returns (uint) {
-        uint[] memory ratingIds = freelancerRatingsList[_freelancer];
-        if (ratingIds.length == 0) return 0;
-        
-        uint totalRating = 0;
-        for (uint i = 0; i < ratingIds.length; i++) {
-            totalRating += freelancerRatings[ratingIds[i]].rating;
-        }
-        
-        return totalRating / ratingIds.length;
-    }
-
-    /**
-     * Mark project as completed by employer (client)
-     */
-    function completeProject(uint _requestId) public {
-        Request storage request = requests[_requestId];
-        require(request.freelancer != address(0), "Request does not exist");
-        require(request.status == RequestStatus.Accepted, "Request must be accepted");
-        
-        // Get employer address from project
-        (,, , , , address employer, ) = projectsContract.getProject(request.projectId);
-        require(msg.sender == employer, "Only the employer can complete the project");
-        
-        projectCompletionCount++;
-        projectCompletions[projectCompletionCount] = ProjectCompletion({
-            completionId: projectCompletionCount,
-            projectId: request.projectId,
-            requestId: _requestId,
-            employer: employer,
-            freelancer: request.freelancer,
-            isCompleted: true,
-            completionTime: block.timestamp
-        });
-        
-        emit ProjectCompleted(request.projectId, _requestId, employer, request.freelancer);
-    }
-
-    /**
-     * Get project completion status
-     */
-    function getProjectCompletion(uint _projectId) public view returns (ProjectCompletion memory) {
-        for (uint i = 1; i <= projectCompletionCount; i++) {
-            if (projectCompletions[i].projectId == _projectId) {
-                return projectCompletions[i];
-            }
-        }
-        revert("Project completion not found");
-    }
-
     /**
      * Quotation Functions
      */
@@ -1173,7 +818,7 @@ contract RequestManager is IArbitrable {
         uint requestId = projectToRequest[_projectId];
         require(requestId > 0, "No request exists for this project");
         
-        (,,,uint originalReward, Projects.Status status, address employer, ) = projectsContract.getProject(_projectId);
+        (,,,, Projects.Status status, address employer, ) = projectsContract.getProject(_projectId);
         require(status == Projects.Status.Open, "Project is not open");
         require(msg.sender == employer, "Only employer can accept quotation");
         
