@@ -9,6 +9,8 @@ contract Escrow {
     address public requestManager;
     uint public amount;
 
+    event DebugPayment(address to, uint amount, uint contractBalance);
+
     constructor(address _freelancer, address _employer, address _requestManager, uint _amount) payable {
         freelancer = _freelancer;
         employer = _employer;
@@ -18,6 +20,11 @@ contract Escrow {
 
     function releaseFunds() external {
         require(msg.sender == employer || msg.sender == requestManager, "Only the employer or RequestManager can release funds");
+        require(freelancer != address(0), "Invalid freelancer address");
+        require(address(this).balance >= amount, "Insufficient balance in escrow");
+
+        emit DebugPayment(freelancer, amount, address(this).balance);
+
         (bool success, ) = payable(freelancer).call{value: amount}("");
         require(success, "Transfer failed");
     }
@@ -411,13 +418,28 @@ contract RequestManager {
         revert("No matching request found for this review request");
     }
 
-    function acceptMilestoneReviewRequest(uint _reviewRequestId, uint _projId) public payable {
+    function acceptMilestoneReviewRequest(uint _reviewRequestId, uint _milestoneId) public payable {
         // Fetch the  request using the ID
         MilestoneReviewRequest storage reviewRequest = milestoneReviewRequests[_reviewRequestId];
         require(!reviewRequest.reviewed, "Review request already accepted");
 
+        // Find the project ID that contains this milestone
+        uint _projId = 0;
+        uint projectCount = projectsContract.projectCount();
+        for (uint p = 1; p <= projectCount; p++) {
+            (uint[] memory tempIds, , , , , , , , , , ) = projectsContract.getMilestones(p);
+            for (uint m = 0; m < tempIds.length; m++) {
+                if (tempIds[m] == _milestoneId) {
+                    _projId = p;
+                    break;
+                }
+            }
+            if (_projId != 0) break;
+        }
+        require(_projId != 0, "Milestone not found in any project");
+
         // Get the milestone ID from the  request
-        uint milestoneId = reviewRequest.milestoneId;
+        uint milestoneId = _milestoneId;
 
         // Retrieve the associated milestones for the project
         (
@@ -453,9 +475,11 @@ contract RequestManager {
         require(msg.sender == employer, "Only the employer can accept milestone review requests");
 
         // Search for the milestone with the specified milestoneId
+        uint milestoneIndex = type(uint).max;
         for (uint i = 0; i < ids.length; i++) {
             if (ids[i] == milestoneId) {
                 milestoneFound = true;
+                milestoneIndex = i;
                 milestoneName = names[i];
                 milestoneDescription = descriptions[i];
                 milestoneDaycount = daycounts[i];
@@ -475,6 +499,11 @@ contract RequestManager {
 
         // Mark the milestone completed in the Projects contract
         projectsContract.completeMilestone(_projId, milestoneId);
+
+        // Update our local status snapshot to reflect the change just made in Projects
+        if (milestoneIndex != type(uint).max) {
+            statuses[milestoneIndex] = Projects.MilestoneStatus.Approved;
+        }
 
         // Get freelancer's address from the request
         address freelancer = reviewRequest.freelancer;
@@ -508,13 +537,13 @@ contract RequestManager {
             emit EscrowReleased(_reviewRequestId, address(escrow), escrowAmount);
         }
 
-        uint _milestoneId = reviewRequest.milestoneId;
+        uint milestoneIdForResponse = milestoneId;
         address _freelancer = reviewRequest.freelancer;
 
         responseCount++;
         reviewResponses[responseCount] = ReviewResponse({
             id: responseCount,
-            milestoneId: _milestoneId,
+            milestoneId: milestoneIdForResponse,
             freelancer: _freelancer,
             response: "",
             accepted: true

@@ -961,6 +961,9 @@ export const downloadFilesForMilestone = async (milestoneId) => {
 };
 
 export const fetchMilestoneReviewRequestsByMilestoneId = async (milestoneId) => {
+  console.log("Calling fetchMilestoneReviewRequestsByMilestoneId with:", {
+      milestoneId
+  });
   console.log("Milestone ID:", milestoneId);
   try {
     console.log("Step 1: Getting contract instance...");
@@ -995,15 +998,20 @@ export const fetchMilestoneReviewRequestsByMilestoneId = async (milestoneId) => 
 };
 
 // Function to accept a milestone review request
-export const acceptMilestoneReviewRequest = async (reviewRequestId, projId, selectedAccount) => {
+export const acceptMilestoneReviewRequest = async (reviewRequestId, milestoneId, selectedAccount) => {
   try {
+    console.log("Calling acceptMilestoneReviewRequest with:", {
+        reviewRequestId,
+        milestoneId,
+        selectedAccount
+    });
     // Get the RequestManager and Projects contract instances
     console.log(1);
     const requestManagerContract = await getRequestManagerContract();
     console.log(2);
     // Call the acceptMilestoneReviewRequest function
     await requestManagerContract.methods
-      .acceptMilestoneReviewRequest(reviewRequestId, projId)
+      .acceptMilestoneReviewRequest(reviewRequestId, milestoneId)
       .send({ from: selectedAccount });
     console.log('Milestone review request accepted:');
   } catch (error) {
@@ -1015,6 +1023,11 @@ export const acceptMilestoneReviewRequest = async (reviewRequestId, projId, sele
 // Function to reject a milestone review request
 export const rejectMilestoneReviewRequest = async (reviewRequestId, reason, selectedAccount) => {
   try {
+    console.log("Calling rejectMilestoneReviewRequest with:", {
+        reviewRequestId,
+        reason,
+        selectedAccount
+    });
     // Get the RequestManager contract instance
     const requestManagerContract = await getRequestManagerContract();
 
@@ -1067,6 +1080,10 @@ export const acceptRejectionReason = async (reviewRequestId, selectedAccount) =>
   console.log("Accepting rejection reason for Review Request ID:", reviewRequestId);
 
   try {
+    console.log("Calling acceptRejectionReason with:", {
+        reviewRequestId,
+        selectedAccount
+    });
     console.log("Step 1: Getting contract instance...");
     const contract = await getRequestManagerContract(); // Get the instance of the RequestManager contract
     console.log("Step 2: Sending transaction...");

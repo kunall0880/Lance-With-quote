@@ -36,6 +36,7 @@
     "server": "node server/index.js",
     "ganache": "ganache -p 7545",
     "migrate:dev": "truffle migrate --network development --reset",
+    "deploy:dev": "node scripts/copy-contract-artifacts.js --deploy --network development --reset",
     "postmigrate:dev": "npm run copy-artifacts",
     "copy-artifacts": "node scripts/copy-contract-artifacts.js",
     "test:dev": "truffle test --network development"

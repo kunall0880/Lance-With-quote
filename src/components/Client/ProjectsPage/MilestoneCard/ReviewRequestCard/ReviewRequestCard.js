@@ -75,7 +75,12 @@ function ReviewRequestCard({ request, selectedAccount, projectId }) {
   // Handler for accepting the review request
   const handleAccept = async () => {
     try {
-      await acceptMilestoneReviewRequest(request.requestId, projectId, selectedAccount);
+      console.log("Calling acceptMilestoneReviewRequest with:", {
+        reviewRequestId: request.requestId,
+        milestoneId: request.milestoneId,
+        selectedAccount
+      });
+      await acceptMilestoneReviewRequest(request.requestId, request.milestoneId, selectedAccount);
       console.log('Request accepted successfully.');
     } catch (error) {
       console.error('Error accepting request:', error);
