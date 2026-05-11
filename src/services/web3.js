@@ -660,8 +660,8 @@ export const fetchAcceptedProjectsByFreelancer = async (freelancer) => {
               name: projectData[0] || projectData.name,
               title: projectData[0] || projectData.name,
               description: projectData[1] || projectData.description,
-              reward: projectData[2] ? projectData[2].toString() : projectData.reward,
-              status: projectData[4] ? projectData[4].toString() : projectData.status,
+              reward: projectData[3] !== undefined && projectData[3] !== null ? projectData[3].toString() : projectData.reward || '0',
+              status: projectData[4] !== undefined && projectData[4] !== null ? projectData[4].toString() : projectData.status || '0',
               employer: projectData[5] || projectData.employer,
             });
           }
@@ -706,8 +706,8 @@ export const fetchAcceptedProjectsByFreelancer = async (freelancer) => {
                     name: projectData[0] || projectData.name,
                     title: projectData[0] || projectData.name,
                     description: projectData[1] || projectData.description,
-                    reward: projectData[2] ? projectData[2].toString() : '0',
-                    status: projectData[4] ? projectData[4].toString() : '0',
+                    reward: projectData[3] !== undefined && projectData[3] !== null ? projectData[3].toString() : '0',
+                    status: projectData[4] !== undefined && projectData[4] !== null ? projectData[4].toString() : '0',
                     employer: projectData[5] || projectData.employer,
                     requestId: reqIds[idx].toString(),
                     escrow: escrows[idx]
@@ -775,8 +775,8 @@ export const fetchAcceptedProjectsByFreelancer = async (freelancer) => {
                 name: projectData[0] || projectData.name,
                 title: projectData[0] || projectData.name,
                 description: projectData[1] || projectData.description,
-                reward: projectData[2] ? projectData[2].toString() : '0',
-                status: projectData[4] ? projectData[4].toString() : '0',
+                reward: projectData[3] !== undefined && projectData[3] !== null ? projectData[3].toString() : '0',
+                status: projectData[4] !== undefined && projectData[4] !== null ? projectData[4].toString() : '0',
                 employer: projectData[5] || projectData.employer,
                 requestId: String(rid)
               };

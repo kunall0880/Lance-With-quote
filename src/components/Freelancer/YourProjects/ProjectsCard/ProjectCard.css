@@ -1,41 +1,287 @@
+/* ProjectCard.css - Modern Web3 Dashboard Card */
 .your-project-card {
-    border: 1px solid #ccc; /* Light gray border */
-    border-radius: 8px; /* Rounded corners */
-    padding: 16px; /* Inner spacing */
-    margin: 12px 0; /* Space above and below the card */
-    background-color: #f9f9f9; /* Light background color */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-    transition: transform 0.2s; /* Smooth hover effect */
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 1.25rem;
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
 }
 
-.your-project-card:hover {
-    transform: scale(1.02); /* Slightly enlarge on hover */
+.your-project-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.your-project-card h3 {
-    margin: 0; /* Remove default margin */
-    color: #007bff; /* Primary color for project title */
+.your-project-card:hover::before {
+  opacity: 1;
 }
 
-.your-project-card p {
-    margin: 8px 0; /* Space between paragraphs */
-    color: #333; /* Darker text color for better readability */
+/* Project Header */
+.project-header {
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--panel-border);
 }
 
-.your-project-card button {
-    background-color: #007bff; /* Bootstrap primary color */
-    color: white; /* White text */
-    border: none; /* No border */
-    border-radius: 4px; /* Rounded corners */
-    padding: 10px 15px; /* Inner spacing */
-    cursor: pointer; /* Pointer cursor on hover */
-    transition: background-color 0.3s; /* Smooth background color change */
+.project-title-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  gap: 1rem;
 }
 
-.your-project-card button:hover {
-    background-color: #0056b3; /* Darker shade on hover */
+.project-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+  flex: 1;
+  min-width: 0;
 }
 
-.your-project-card div {
-    margin-top: 16px; /* Space above milestones section */
+.project-description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+}
+
+.status-open {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.status-in-progress {
+  background: rgba(251, 191, 36, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.status-submitted {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-completed {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-paid {
+  background: rgba(139, 92, 246, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.status-disputed {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-unknown {
+  background: rgba(156, 163, 175, 0.15);
+  color: #9ca3af;
+  border: 1px solid rgba(156, 163, 175, 0.3);
+}
+
+/* Project Metadata */
+.project-metadata {
+  padding: 1rem 1.5rem;
+}
+
+.metadata-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.metadata-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.metadata-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metadata-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+/* Project Actions */
+.project-actions {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.btn-primary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: white;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-icon {
+  font-size: 1rem;
+}
+
+.btn-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Milestones Section */
+.milestones-section {
+  padding: 1.5rem;
+  border-top: 1px solid var(--panel-border);
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.milestones-title {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.milestones-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.no-milestones {
+  margin: 1rem 0 0 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 2rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 0.75rem;
+  border: 1px dashed var(--panel-border);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .project-header,
+  .project-metadata,
+  .project-actions,
+  .milestones-section {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .metadata-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .project-title-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .status-badge {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .project-title {
+    font-size: 1.125rem;
+  }
+
+  .metadata-value {
+    font-size: 0.8125rem;
+  }
 }

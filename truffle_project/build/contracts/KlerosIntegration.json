@@ -74,7 +74,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -87,7 +88,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -121,7 +123,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -166,7 +169,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -185,7 +189,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     }
   ],
   "metadata": "{\"compiler\":{\"version\":\"0.8.35+commit.47b9dedd\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_arbitrator\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"disputeId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"partyA\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"partyB\",\"type\":\"address\"}],\"name\":\"DisputeCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"disputeId\",\"type\":\"uint256\"}],\"name\":\"DisputeRaised\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"disputeId\",\"type\":\"uint256\"}],\"name\":\"DisputeResolved\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"arbitrator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_disputeId\",\"type\":\"uint256\"}],\"name\":\"checkDisputeStatus\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"disputeCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"disputes\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"partyA\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"partyB\",\"type\":\"address\"},{\"internalType\":\"enum KlerosIntegration.Status\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"disputeId\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_disputeId\",\"type\":\"uint256\"}],\"name\":\"getDisputeResult\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_partyB\",\"type\":\"address\"}],\"name\":\"raiseDispute\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_disputeId\",\"type\":\"uint256\"}],\"name\":\"resolveDispute\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/KlerosIntegration.sol\":\"KlerosIntegration\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":1},\"remappings\":[],\"viaIR\":true},\"sources\":{\"project:/contracts/KlerosIntegration.sol\":{\"keccak256\":\"0x826aa2f44fb92991b19d2e9239a0a5f03df0eb4a4d430a3f38d305f4d748ca15\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://7f242134e4a4c95bb02024c5ab76e0f51905d6f796d4a45e3712c29ae75af2e9\",\"dweb:/ipfs/QmWcc7CLp4Up1Z4C71L6bs5wj4uC1gTGyZbHzHajJV4Pkv\"]}},\"version\":1}",
@@ -2771,12 +2776,13 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0xf78107665A95edf62D3EBA6a701d748d87a32e39",
-      "transactionHash": "0x6e6e3376649a442e144048196932ac7593ace81a9e8adc152ada9060d1f323a2"
+      "address": "0x765849353a0F1D070D5155C10D28c3169f23Cd26",
+      "transactionHash": "0xbeb24d4d00baa0c2d3b51ae76c3282a0aa31d5782e7bf9973fc9a82e82bf3472"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2026-05-02T19:03:06.879Z",
+  "updatedAt": "2026-05-11T17:56:58.151Z",
+  "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
     "methods": {},

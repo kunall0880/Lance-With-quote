@@ -1,43 +1,155 @@
 .milestone-card {
-    background-color: #ffffff; /* White background for the card */
-    border: 1px solid #ddd; /* Light border around the card */
-    border-radius: 8px; /* Rounded corners */
-    padding: 16px; /* Padding inside the card */
-    margin: 16px 0; /* Margin around the card */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow effect */
-    transition: box-shadow 0.3s ease; /* Smooth transition for hover effect */
-  }
-  
-  .milestone-card:hover {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
-  }
-  
-  .milestone-card p {
-    margin: 8px 0; /* Spacing between paragraphs */
-    font-size: 14px; /* Font size for text */
-    color: #333; /* Darker text color */
-  }
-  
-  .milestone-card button {
-    background-color: #4CAF50; /* Green background for buttons */
-    color: white; /* White text color */
-    border: none; /* No border */
-    border-radius: 4px; /* Rounded corners */
-    padding: 10px 16px; /* Padding inside the button */
-    cursor: pointer; /* Pointer cursor on hover */
-    margin-right: 8px; /* Spacing between buttons */
-    transition: background-color 0.3s ease; /* Transition for hover effect */
-  }
-  
-  .milestone-card button:hover {
-    background-color: #45a049; /* Darker green on hover */
-  }
-  
-  .review-requests {
-    margin-top: 12px; /* Spacing above the review requests section */
-  }
-  
-  .review-requests .review-request-card {
-    margin-top: 8px; /* Spacing between review request cards */
-  }
+    background: rgba(14, 17, 46, 0.96);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 20px;
+    padding: 24px;
+    margin: 20px 0;
+    box-shadow: 0 24px 70px rgba(12, 18, 56, 0.24);
+    backdrop-filter: blur(14px);
+    color: #e5e7ff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.milestone-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 28px 82px rgba(12, 18, 56, 0.32);
+}
+
+.milestone-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.milestone-card__id {
+    display: inline-block;
+    color: #a5b4fc;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.milestone-card__title {
+    margin: 6px 0 0;
+    font-size: 1.18rem;
+    line-height: 1.2;
+    color: #fff;
+}
+
+.status-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.95rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.status-chip--submitted {
+    background: rgba(59, 130, 246, 0.18);
+    color: #bfdbfe;
+}
+
+.milestone-card__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 760px) {
+    .milestone-card__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.milestone-card__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.milestone-card__label {
+    color: #9ca3b8;
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+.milestone-card__value {
+    color: #f8fbff;
+    font-size: 0.94rem;
+    line-height: 1.6;
+}
+
+.milestone-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.button {
+    border: none;
+    cursor: pointer;
+    border-radius: 999px;
+    min-height: 44px;
+    padding: 0 20px;
+    font-weight: 700;
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.button:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.button--primary {
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    color: #ffffff;
+    box-shadow: 0 14px 32px rgba(99, 102, 241, 0.2);
+}
+
+.button--secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.section-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 22px;
+    margin-bottom: 16px;
+}
+
+.section-title {
+    margin: 0;
+    color: #e2e8f0;
+    font-size: 1rem;
+}
+
+.section-subtitle {
+    color: #94a3b8;
+    font-size: 0.88rem;
+}
+
+.empty-state {
+    margin-top: 16px;
+    color: #cbd5e1;
+    padding: 16px;
+    border-radius: 16px;
+    background: rgba(148, 163, 184, 0.08);
+}
   

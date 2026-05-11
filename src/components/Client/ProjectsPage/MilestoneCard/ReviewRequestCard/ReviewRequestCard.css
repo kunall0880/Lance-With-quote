@@ -1,72 +1,126 @@
 .review-request-card {
-    background-color: #f9f9f9; /* Light background for the card */
-    border: 1px solid #ddd; /* Light border around the card */
-    border-radius: 8px; /* Rounded corners */
-    padding: 16px; /* Padding inside the card */
-    margin: 16px 0; /* Margin around the card */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow effect */
-  }
-  
-  .review-request-card p {
-    margin: 8px 0; /* Spacing between paragraphs */
-    font-size: 14px; /* Font size for text */
-    color: #333; /* Darker text color */
-  }
-  
-  .review-request-card button {
-    background-color: #4CAF50; /* Green background for accept button */
-    color: white; /* White text color */
-    border: none; /* No border */
-    border-radius: 4px; /* Rounded corners */
-    padding: 10px 16px; /* Padding inside the button */
-    cursor: pointer; /* Pointer cursor on hover */
-    margin-right: 8px; /* Spacing between buttons */
-    transition: background-color 0.3s ease; /* Transition for hover effect */
-  }
-  
-  .review-request-card button:hover {
-    background-color: #45a049; /* Darker green on hover for accept button */
-  }
-  
-  .review-request-card .decline-reason-input {
-    margin-top: 12px; /* Spacing above the decline reason input area */
-    background-color: #fff; /* White background for the input area */
-    padding: 12px; /* Padding inside the input area */
-    border: 1px solid #ccc; /* Border for the input area */
-    border-radius: 4px; /* Rounded corners for input area */
-  }
-  
-  .review-request-card textarea {
-    width: 100%; /* Full width for textarea */
-    height: 80px; /* Set a height for the textarea */
-    padding: 8px; /* Padding inside textarea */
-    border: 1px solid #ccc; /* Border for textarea */
-    border-radius: 4px; /* Rounded corners for textarea */
-    margin-bottom: 8px; /* Spacing below textarea */
-    resize: none; /* Disable resizing */
-  }
-  
-  .review-request-card button:nth-of-type(2) {
-    background-color: #f44336; /* Red background for decline button */
-  }
-  
-  .review-request-card button:nth-of-type(2):hover {
-    background-color: #e53935; /* Darker red on hover for decline button */
-  }
-  
-  .review-request-card button:nth-of-type(3) {
-    background-color: #2196F3; /* Blue background for send button */
-  }
-  
-  .review-request-card button:nth-of-type(3):hover {
-    background-color: #1976D2; /* Darker blue on hover for send button */
-  }
-  
-  .review-request-card button:nth-of-type(4) {
-    background-color: #999; /* Grey background for cancel button */
-  }
-  
-  .review-request-card button:nth-of-type(4):hover {
-    background-color: #777; /* Darker grey on hover for cancel button */
-  }
+    background: rgba(14, 17, 46, 0.96);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 18px;
+    padding: 20px;
+    margin: 16px 0;
+    box-shadow: 0 22px 60px rgba(12, 18, 56, 0.22);
+}
+
+.review-request-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.review-request-card__label {
+    display: block;
+    color: #94a3b8;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.review-request-card__title,
+.review-request-card__value {
+    margin: 0;
+    color: #f8fbff;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.review-request-card__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.review-request-card__full-width {
+    grid-column: 1 / -1;
+}
+
+.review-request-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.button {
+    border: none;
+    cursor: pointer;
+    border-radius: 999px;
+    min-height: 44px;
+    padding: 0 20px;
+    font-weight: 700;
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.button:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.button--success {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #ffffff;
+}
+.status-chip--pending {
+    background: rgba(59, 130, 246, 0.18);
+    color: #bfdbfe;
+}
+.button--danger {
+    background: rgba(248, 113, 113, 0.18);
+    color: #fecaca;
+}
+
+.button--secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.decline-reason-input {
+    margin-top: 16px;
+    padding: 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 18px;
+}
+
+.decline-reason-input textarea {
+    width: 100%;
+    min-height: 110px;
+    padding: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.95);
+    color: #edf2ff;
+    resize: vertical;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.decline-reason-input textarea:focus {
+    outline: none;
+    border-color: rgba(96, 165, 250, 0.8);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+
+.decline-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+
+@media (max-width: 720px) {
+    .review-request-card__grid {
+        grid-template-columns: 1fr;
+    }
+}
   
